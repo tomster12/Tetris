@@ -1,3 +1,3 @@
 # Tetris
 
-This is a versio of tetris recreated in processing.
+This is a version of tetris recreated in processing.
