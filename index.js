@@ -5,17 +5,17 @@
 // Make ghost be a position and not a color - allowing shading on spawn etc
 // Implement ghost
 // Potentially gain score from loops around central point
-
-//     TODONE?
 // Fix piece rotation with line pieces
 // Check piece.isViable
+// Use score checking loop for rotation positions
+
 
 //      TODONT
 // Potentially gain score from lines around outside
 //   if use this then move half the board in direction
 
+
 //    TODO
-// Use score checking loop for rotation positions
 // Add direction indicator
 // Add score
 // Art for each color of piece
@@ -42,7 +42,7 @@ function setup() { // Setup variables and canvas
 
 
     running: false, // Internal variables
-    score: 10,
+    score: 0,
     inputs: [false, false, false, false],
     pieceList: [[], [], [], []],
     spawnsValid: [true, true, true, true],
@@ -624,6 +624,8 @@ function draw() { // Called each frame
 
 function keyPressed() { // Input
   game0.keyPressed();
+
+  if (keyCode == 89) console.log("debug");
 }
 
 
