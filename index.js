@@ -23,7 +23,6 @@
 // Sound effects
 
 
-
 // #region - Setup
 
 let game0;
@@ -625,6 +624,8 @@ function draw() { // Called each frame
 
 function keyPressed() { // Input
   game0.keyPressed();
+
+  if (keyCode == 89) console.log("debug");
 }
 
 
