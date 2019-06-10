@@ -19,6 +19,8 @@
 
 
 //    TODO
+// Add highscore using php
+// Add website surrounding canvas
 // Add direction indicator
 // Art for each color of piece
 // Art for board and background
@@ -198,9 +200,17 @@ function setup() { // Setup variables and canvas
 
     // #region - Variables
 
-    maxPiece: 7, // Config variables
+    maxPiece: 7, // Constant variables
     pieceListAmount: 4,
     screenName: "game0",
+    startButton: {
+      pos: createVector(width - 85, height - 70),
+      size: createVector(60, 40),
+    },
+    endScreen: {
+      pos: createVector(120, 60),
+      size: createVector(width-240, height-120)
+    },
 
 
     running: false, // Internal variables
@@ -212,10 +222,6 @@ function setup() { // Setup variables and canvas
     holdPieceType: null,
     canHold: true,
     score: 0,
-    startButton: {
-      pos: createVector(width - 85, height - 70),
-      size: createVector(60, 40),
-    },
 
 
     board: { // Board
@@ -727,6 +733,13 @@ function setup() { // Setup variables and canvas
       text(this.running ? "Lose" : this.hasReset ? "Start" : "Reset",
       this.startButton.pos.x + this.startButton.size.x/2,
       this.startButton.pos.y + this.startButton.size.y/2+8);
+
+      if (!this.running && !this.hasReset) { // Show end screen
+        stroke(255);
+        fill(0);
+        rect(this.endScreen.pos.x, this.endScreen.pos.y,
+        this.endScreen.size.x, this.endScreen.size.y);
+      }
     },
 
 
@@ -831,19 +844,14 @@ function setup() { // Setup variables and canvas
 
 
     mousePressed: function() { // Input
-      if (mouseX > this.startButton.pos.x
+      if (mouseX > this.startButton.pos.x // Check for play button
       &&mouseX < this.startButton.pos.x+this.startButton.size.x
       &&mouseY > this.startButton.pos.y
       &&mouseY < this.startButton.pos.y+this.startButton.size.y) {
         if (!this.running) {
-          if (!this.hasReset) {
-            this.reset();
-          } else {
-            this.start();
-          }
-        } else {
-          this.lose();
-        }
+          if (!this.hasReset) this.reset();
+          else this.start();
+        } else this.lose();
       }
     }
 
