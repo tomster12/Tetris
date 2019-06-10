@@ -25,7 +25,8 @@
 
 // #region - Setup
 
-let game0;
+let title, menu, game0;
+let gameController;
 
 
 function setup() { // Setup variables and canvas
@@ -34,12 +35,170 @@ function setup() { // Setup variables and canvas
   fill(255);
 
 
+  title = { // Title
+
+    // #region - Variables
+
+    screenName: "title",
+
+    // #endregion
+
+
+    // #region - Functions
+
+    init: function() { // Called during setup
+
+    },
+
+
+    changeTo: function() { // Called when changed to
+
+    },
+
+
+    changeFrom: function() { // Called when changed from
+
+    },
+
+
+    update: function() { // Called each frame
+
+    },
+
+
+    show: function() { // Called each frame after update
+      textSize(50);
+      textAlign(CENTER);
+      fill(255);
+      noStroke();
+      text("Tetris 360", width/2, height/2+25);
+    },
+
+
+    keyPressed: function() { // Input
+      gameController.currentScreen = menu;
+    },
+
+
+    keyReleased: function() { // Input
+
+    },
+
+
+    mousePressed: function() { // Input
+      gameController.currentScreen = menu;
+    }
+
+    // #endregion
+
+  };
+
+
+  menu = { // Menu
+
+    // #region - Variables
+
+    screenName: "menu",
+    buttonsStart: createVector(width/2, height/2-50),
+    buttonsDifference: createVector(0, 100),
+    buttonSize: createVector(200, 70),
+    buttons: [
+      {text: "title", func: function() {gameController.currentScreen = title;}},
+      {text: "game0", func: function() {gameController.currentScreen = game0;}}
+    ],
+
+    // #endregion
+
+
+    // #region - Functions
+
+    init: function() { // Called during setup
+
+    },
+
+
+    changeTo: function() { // Called when changed to
+
+    },
+
+
+    changeFrom: function() { // Called when changed from
+
+    },
+
+
+    update: function() { // Called each frame
+
+    },
+
+
+    show: function() { // Called each frame after update
+
+      textSize(35);
+      textAlign(CENTER);
+      noStroke();
+      fill(255);
+      text("Tetris 360", width/2, height/2 - 150);
+
+      textSize(25); // Show buttons
+      for (let i = 0; i < this.buttons.length; i++) {
+        let cx = this.buttonsStart.x + this.buttonsDifference.x*i;
+        let cy = this.buttonsStart.y + this.buttonsDifference.y*i;
+
+        noFill();
+        if (mouseX > cx - this.buttonSize.x/2
+        &&mouseX < cx + this.buttonSize.x/2
+        &&mouseY > cy - this.buttonSize.y/2
+        &&mouseY < cy + this.buttonSize.y/2)
+          fill(50);
+        stroke(255);
+        rect(
+          cx - this.buttonSize.x/2,
+          cy - this.buttonSize.y/2,
+          this.buttonSize.x, this.buttonSize.y
+        );
+
+        fill(255);
+        noStroke();
+        text(this.buttons[i].text, cx, cy+11);
+      }
+    },
+
+
+    keyPressed: function() { // Input
+
+    },
+
+
+    keyReleased: function() { // Input
+
+    },
+
+
+    mousePressed: function() { // Input
+      for (let i = 0; i < this.buttons.length; i++) {
+        let cx = this.buttonsStart.x + this.buttonsDifference.x*i;
+        let cy = this.buttonsStart.y + this.buttonsDifference.y*i;
+        if (mouseX > cx - this.buttonSize.x/2
+        &&mouseX < cx + this.buttonSize.x/2
+        &&mouseY > cy - this.buttonSize.y/2
+        &&mouseY < cy + this.buttonSize.y/2)
+          this.buttons[i].func();
+      }
+    }
+
+    // #endregion
+
+  };
+
+
   game0 = { // Game
 
     // #region - Variables
 
     maxPiece: 7, // Config variables
     pieceListAmount: 4,
+    screenName: "game0",
 
 
     running: false, // Internal variables
@@ -405,12 +564,12 @@ function setup() { // Setup variables and canvas
 
 
     changeTo: function() { // Called when changed to
-      this.board.reset();
+      this.reset();
     },
 
 
     changeFrom: function() { // Called when changed from
-
+      this.lose();
     },
 
 
@@ -432,6 +591,14 @@ function setup() { // Setup variables and canvas
       this.piece.toPlace = false;
       this.piece.moveTimer = 0;
       this.piece.inputTimer = 0;
+    },
+
+
+    reset: function() { // Reset board to untouched state - Mainly visual
+      this.board.reset();
+      this.inputs = [false, false, false, false];
+      this.pieceList = [[],[],[],[]];
+      this.spawnsValid = [true, true, true, true];
     },
 
 
@@ -634,53 +801,10 @@ function setup() { // Setup variables and canvas
           this.piece.inputTimer = 0;
         }
       }
-    }
-
-    // #endregion
-
-  };
-
-
-  menu = { // Menu
-
-    // #region - Variables
-
-    // #endregion
-
-
-    // #region - Functions
-
-    init: function() { // Called during setup
-
     },
 
 
-    changeTo: function() { // Called when changed to
-
-    },
-
-
-    changeFrom: function() { // Called when changed from
-
-    },
-
-
-    update: function() { // Called each frame
-
-    },
-
-
-    show: function() { // Called each frame after update
-
-    },
-
-
-    keyPressed: function() { // Input
-
-    },
-
-
-    keyReleased: function() { // Input
+    mousePressed: function() { // Input
 
     }
 
@@ -693,8 +817,8 @@ function setup() { // Setup variables and canvas
 
     // #region - Variables
 
-    currentScreen: 0,
-    screens: [menu, game0],
+    screens: [title, menu, game0],
+    currentScreen: title,
 
     // #endregion
 
@@ -708,44 +832,32 @@ function setup() { // Setup variables and canvas
 
 
     update: function() { // Called each frame
-      if (this.screens[this.currentScreen] != null)
-        this.screens[this.currentScreen].update();
+      if (this.currentScreen != null)
+        this.currentScreen.update();
     },
 
 
     show: function() { // Called each frame after update
-      if (this.screens[this.currentScreen] != null)
-        this.screens[this.currentScreen].show();
-
-      textSize(20);
-      textAlign(CENTER);
-      fill(255);
-      noStroke();
-      text(this.currentScreen, width-15, 25);
+      if (this.currentScreen != null)
+        this.currentScreen.show();
     },
 
 
     keyPressed: function() { // Input
-      if (this.screens[this.currentScreen] != null)
-        this.screens[this.currentScreen].keyPressed();
-
-      if (keyCode == 219) {
-        this.currentScreen = (this.currentScreen+3)%4;
-        if (this.screens[this.currentScreen] != null)
-          this.screens[this.currentScreen].changeTo();
-      }
-
-      if (keyCode == 221) {
-        this.currentScreen = (this.currentScreen+1)%4;
-        if (this.screens[this.currentScreen] != null)
-          this.screens[this.currentScreen].changeFrom();
-      }
+      if (this.currentScreen != null)
+        this.currentScreen.keyPressed();
     },
 
 
     keyReleased: function() { // Input
-      if (this.screens[this.currentScreen] != null)
-        this.screens[this.currentScreen].keyReleased();
+      if (this.currentScreen != null)
+        this.currentScreen.keyReleased();
+    },
+
+
+    mousePressed: function() { // Input
+      if (this.currentScreen != null)
+        this.currentScreen.mousePressed();
     }
 
     // #endregion
@@ -775,6 +887,11 @@ function keyPressed() { // Input
 
 function keyReleased() { // Input
   gameController.keyReleased();
+}
+
+
+function mousePressed() { // Input
+  gameController.mousePressed();
 }
 
 
