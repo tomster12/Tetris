@@ -8,6 +8,9 @@
 // Fix piece rotation with line pieces
 // Check piece.isViable
 // Use score checking loop for rotation positions
+// Add score
+// Seperate screens for menu / Title
+// Start button
 
 
 //      TODONT
@@ -17,7 +20,6 @@
 
 //    TODO
 // Add direction indicator
-// Add score
 // Art for each color of piece
 // Art for board and background
 // Sound effects
@@ -202,6 +204,7 @@ function setup() { // Setup variables and canvas
 
 
     running: false, // Internal variables
+    hasReset: true,
     score: 0,
     inputs: [false, false, false, false],
     pieceList: [[], [], [], []],
@@ -209,6 +212,10 @@ function setup() { // Setup variables and canvas
     holdPieceType: null,
     canHold: true,
     score: 0,
+    startButton: {
+      pos: createVector(width - 85, height - 70),
+      size: createVector(60, 40),
+    },
 
 
     board: { // Board
@@ -234,6 +241,7 @@ function setup() { // Setup variables and canvas
 
 
       reset: function() { // Setup board
+        console.log("resetting board");
         this.game = [];
         this.output = [];
         for (let x = 0; x < this.size.x; x++) {
@@ -575,6 +583,7 @@ function setup() { // Setup variables and canvas
 
     start: function() { // Setup game variables
       this.running = true;
+      this.hasReset = false;
       this.score = 0;
       this.inputs = [false, false, false, false];
       this.pieceList = [[],[],[],[]];
@@ -591,6 +600,7 @@ function setup() { // Setup variables and canvas
       this.piece.toPlace = false;
       this.piece.moveTimer = 0;
       this.piece.inputTimer = 0;
+      console.log("start");
     },
 
 
@@ -599,6 +609,7 @@ function setup() { // Setup variables and canvas
       this.inputs = [false, false, false, false];
       this.pieceList = [[],[],[],[]];
       this.spawnsValid = [true, true, true, true];
+      this.hasReset = true;
     },
 
 
@@ -698,6 +709,24 @@ function setup() { // Setup variables and canvas
           }
         }
       }
+
+      stroke(255); // Show play button
+      noFill();
+      if (mouseX > this.startButton.pos.x
+      &&mouseX < this.startButton.pos.x+this.startButton.size.x
+      &&mouseY > this.startButton.pos.y
+      &&mouseY < this.startButton.pos.y+this.startButton.size.y)
+        fill(50);
+      stroke(255);
+      rect(this.startButton.pos.x, this.startButton.pos.y,
+      this.startButton.size.x, this.startButton.size.y);
+      textSize(20);
+      textAlign(CENTER);
+      noStroke();
+      fill(255);
+      text(this.running ? "Lose" : this.hasReset ? "Start" : "Reset",
+      this.startButton.pos.x + this.startButton.size.x/2,
+      this.startButton.pos.y + this.startButton.size.y/2+8);
     },
 
 
@@ -805,7 +834,20 @@ function setup() { // Setup variables and canvas
 
 
     mousePressed: function() { // Input
-
+      if (mouseX > this.startButton.pos.x
+      &&mouseX < this.startButton.pos.x+this.startButton.size.x
+      &&mouseY > this.startButton.pos.y
+      &&mouseY < this.startButton.pos.y+this.startButton.size.y) {
+        if (!this.running) {
+          if (!this.hasReset) {
+            this.reset();
+          } else {
+            this.start();
+          }
+        } else {
+          this.lose();
+        }
+      }
     }
 
     // #endregion
