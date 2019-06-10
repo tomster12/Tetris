@@ -34,7 +34,7 @@ let gameController;
 
 
 function setup() { // Setup variables and canvas
-  createCanvas(600, 600);
+  createCanvas(800, 800);
   noStroke();
   fill(255);
 
@@ -107,8 +107,8 @@ function setup() { // Setup variables and canvas
     buttonsDifference: createVector(0, 100),
     buttonSize: createVector(200, 70),
     buttons: [
-      {text: "title", func: function() {gameController.currentScreen = title;}},
-      {text: "game0", func: function() {gameController.currentScreen = game0;}}
+      {text: "play", func: function() {gameController.currentScreen = game0;}},
+      {text: "back", func: function() {gameController.currentScreen = title;}}
     ],
 
     // #endregion
@@ -204,12 +204,17 @@ function setup() { // Setup variables and canvas
     pieceListAmount: 4,
     screenName: "game0",
     startButton: {
-      pos: createVector(width - 85, height - 70),
-      size: createVector(60, 40),
+      pos: createVector(width - 120, height - 75),
+      size: createVector(85, 50),
     },
     endScreen: {
-      pos: createVector(120, 60),
-      size: createVector(width-240, height-120)
+      pos: createVector(140, 60),
+      size: createVector(width - 280, height - 120),
+      inputBox: {
+        pos: createVector(140 + (width-200) - 350, 60 + 117),
+        size: createVector(100, 50),
+        text: ""
+      }
     },
 
 
@@ -222,6 +227,7 @@ function setup() { // Setup variables and canvas
     holdPieceType: null,
     canHold: true,
     score: 0,
+    highScores: null,
 
 
     board: { // Board
@@ -230,7 +236,7 @@ function setup() { // Setup variables and canvas
 
       pos: createVector(100, 100), // Constants variables
       size: createVector(21, 21),
-      scale: createVector(400, 400),
+      scale: createVector(width-200, height-200),
 
       game0: null, // Internal variables
       game: null,
@@ -626,6 +632,8 @@ function setup() { // Setup variables and canvas
       this.piece.toPlace = false;
       this.piece.moveTimer = 0;
       this.piece.inputTimer = 0;
+
+      this.highScores = JSON.parse(localStorage.getItem("highScores"));
       console.log("lost");
     },
 
@@ -739,6 +747,45 @@ function setup() { // Setup variables and canvas
         fill(0);
         rect(this.endScreen.pos.x, this.endScreen.pos.y,
         this.endScreen.size.x, this.endScreen.size.y);
+
+        noStroke();
+        fill(255);
+
+        textAlign(CENTER);
+        textSize(50);
+        text("Game Over", this.endScreen.pos.x + this.endScreen.size.x/2,
+        this.endScreen.pos.y + 80);
+
+        textAlign(LEFT);
+        textSize(30);
+        text("Score: " + this.score, this.endScreen.pos.x + this.endScreen.size.x/2 - 150,
+        this.endScreen.pos.y + 150);
+
+        textSize(20);
+        for (let i = 0; i < 10; i++) {
+          let cx = this.endScreen.pos.x + this.endScreen.size.x/2;
+          let cy = this.endScreen.pos.y + 220 + 45 * i;
+          ellipse(cx - 175, cy, 10, 10);
+          if (this.highScores != null && this.highScores.length > i) {
+            textAlign(LEFT);
+            text(this.highScores[i].name, cx - 150, cy+8);
+            textAlign(RIGHT);
+            text(this.highScores[i].score, cx + 150, cy+8);
+          }
+        }
+
+        stroke(255); // Show input box
+        noFill();
+        rect(this.endScreen.inputBox.pos.x, this.endScreen.inputBox.pos.y,
+        this.endScreen.inputBox.size.x, this.endScreen.inputBox.size.y);
+        rect(this.endScreen.inputBox.pos.x + this.endScreen.inputBox.size.x + 10 + 5, this.endScreen.inputBox.pos.y + 5,
+        this.endScreen.inputBox.size.y - 10, this.endScreen.inputBox.size.y - 10);
+        noStroke();
+        fill(this.endScreen.inputBox.text=="" ? 180 : 255);
+        textAlign(LEFT);
+        let outputText = this.endScreen.inputBox.text=="" ? "Name..." : this.endScreen.inputBox.text;
+        text(outputText, this.endScreen.inputBox.pos.x + 15,
+        this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y/2 + 8);
       }
     },
 
