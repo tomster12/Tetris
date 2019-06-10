@@ -33,6 +33,7 @@ function setup() { // Setup variables and canvas
   noStroke();
   fill(255);
 
+
   game0 = { // Game
 
     // #region - Variables
@@ -86,6 +87,11 @@ function setup() { // Setup variables and canvas
         }
         this.game[int(this.size.x/2)][int(this.size.y/2)]=1;
         this.output[int(this.size.x/2)][int(this.size.y/2)]=1;
+      },
+
+
+      update: function() { // Called each frame
+        this.updateOutput();
       },
 
 
@@ -221,7 +227,12 @@ function setup() { // Setup variables and canvas
       },
 
 
-      updateMovement: function() {
+      update: function() { // Called each frame
+        this.updateMovement();
+      },
+
+
+      updateMovement: function() { // Move the piece based on input and timers
         if (this.toMove) {
 
           if (this.game0.inputs[(this.direction + 1) % 4] // Movement based on input
@@ -269,8 +280,7 @@ function setup() { // Setup variables and canvas
 
       generateNew: function(givenDirection=null, count=0, givenPiece=null) { // Generate new piece
         if (count >= 4) {
-          console.log("Could not generate piece");
-          this.game0.running = false;
+          this.game0.lose();
 
         } else {
           let newDirection = givenDirection!=null ? givenDirection : ((this.direction ? this.direction : 0) + 5) % 4;
@@ -387,10 +397,20 @@ function setup() { // Setup variables and canvas
 
     // #region - Functions
 
-    init: function() { // Initialize board, piece and game0
+    init: function() { // Called during setup
       this.board.init(this);
       this.piece.init(this);
       this.board.reset();
+    },
+
+
+    changeTo: function() { // Called when changed to
+
+    },
+
+
+    changeFrom: function() { // Called when changed from
+
     },
 
 
@@ -415,11 +435,20 @@ function setup() { // Setup variables and canvas
     },
 
 
-    update: function() {
-      if (this.running) {
-        this.piece.updateMovement();
-        this.board.updateOutput();
-      }
+    lose: function() { // Cannot generate any pieces
+      this.running = false;
+      this.piece.toMove = false;
+      this.piece.toSprint = false;
+      this.piece.toPlace = false;
+      this.piece.moveTimer = 0;
+      this.piece.inputTimer = 0;
+      console.log("lost");
+    },
+
+
+    update: function() { // Called each frame
+      this.piece.update();
+      this.board.update();
     },
 
 
@@ -560,54 +589,171 @@ function setup() { // Setup variables and canvas
       if (keyCode == 81) // Start game
         this.start();
 
-      if (keyCode == 90) // Rotation
+      if (this.running) {
+        if (keyCode == 90) // Rotation
         this.piece.rotate(1);
 
-      else if (keyCode == 88)
+        else if (keyCode == 88)
         this.piece.rotate(-1);
 
-      else if (keyCode == 67) { // Hold piece
-        if (this.canHold) {
-          let prevHoldPieceType = this.holdPieceType;
-          this.holdPieceType = this.piece.type;
-          this.piece.generateNew(this.piece.direction, 0, prevHoldPieceType);
-          this.canHold = false;
-        }
+        else if (keyCode == 67) { // Hold piece
+          if (this.canHold) {
+            let prevHoldPieceType = this.holdPieceType;
+            this.holdPieceType = this.piece.type;
+            this.piece.generateNew(this.piece.direction, 0, prevHoldPieceType);
+            this.canHold = false;
+          }
 
-      } else if (keyCode == 32) { // Hard drop
-        if (this.piece.ghostPos != null) {
-          let dx = this.piece.ghostPos.x-this.piece.pos.x;
-          let dy = this.piece.ghostPos.y-this.piece.pos.y;
-          this.piece.move(dx, dy);
-          this.piece.place();
-        } else {
-          console.log("no ghost");
-        }
+        } else if (keyCode == 32) { // Hard drop
+          if (this.piece.ghostPos != null) {
+            let dx = this.piece.ghostPos.x-this.piece.pos.x;
+            let dy = this.piece.ghostPos.y-this.piece.pos.y;
+            this.piece.move(dx, dy);
+            this.piece.place();
+          } else {
+            console.log("no ghost");
+          }
 
-      } else if (keyCode >= 37 && keyCode <= 40) { // Movement
-        let inputDirection = (keyCode-35)%4;
-        this.inputs[inputDirection] = true;
-        let offset = vectorFromDirection(inputDirection);
-        if (inputDirection == (this.piece.direction+3)%4
-        ||  inputDirection == (this.piece.direction+5)%4
-        ) this.piece.move(offset.x, offset.y);
+        } else if (keyCode >= 37 && keyCode <= 40) { // Movement
+          let inputDirection = (keyCode-35)%4;
+          this.inputs[inputDirection] = true;
+          let offset = vectorFromDirection(inputDirection);
+          if (inputDirection == (this.piece.direction+3)%4
+          ||  inputDirection == (this.piece.direction+5)%4
+          ) this.piece.move(offset.x, offset.y);
+        }
       }
     },
 
 
     keyReleased: function() {
+      if (this.running) {
         if (keyCode >= 37 && keyCode <= 40) { // Movement
           let inputDirection = (keyCode-35)%4;
           this.inputs[inputDirection] = false;
           this.piece.inputTimer = 0;
         }
+      }
     }
 
     // #endregion
 
   };
 
-  game0.init();
+
+  menu = { // Menu
+
+    // #region - Variables
+
+    // #endregion
+
+
+    // #region - Functions
+
+    init: function() { // Called during setup
+
+    },
+
+
+    changeTo: function() { // Called when changed to
+
+    },
+
+
+    changeFrom: function() { // Called when changed from
+
+    },
+
+
+    update: function() { // Called each frame
+
+    },
+
+
+    show: function() { // Called each frame after update
+
+    },
+
+
+    keyPressed: function() { // Input
+
+    },
+
+
+    keyReleased: function() { // Input
+
+    }
+
+    // #endregion
+
+  };
+
+
+  gameController = { // Main controller
+
+    // #region - Variables
+
+    currentScreen: 0,
+    screens: [menu, game0],
+
+    // #endregion
+
+
+    // #region - Functions
+
+    init: function() { // Called during setup
+        for (let screen of this.screens)
+          screen.init();
+    },
+
+
+    update: function() { // Called each frame
+      if (this.screens[this.currentScreen] != null)
+        this.screens[this.currentScreen].update();
+    },
+
+
+    show: function() { // Called each frame after update
+      if (this.screens[this.currentScreen] != null)
+        this.screens[this.currentScreen].show();
+
+      textSize(20);
+      textAlign(CENTER);
+      fill(255);
+      noStroke();
+      text(this.currentScreen, width-15, 25);
+    },
+
+
+    keyPressed: function() { // Input
+      if (this.screens[this.currentScreen] != null)
+        this.screens[this.currentScreen].keyPressed();
+
+      if (keyCode == 219) {
+        this.currentScreen = (this.currentScreen+3)%4;
+        if (this.screens[this.currentScreen] != null)
+          this.screens[this.currentScreen].changeTo();
+      }
+
+      if (keyCode == 221) {
+        this.currentScreen = (this.currentScreen+1)%4;
+        if (this.screens[this.currentScreen] != null)
+          this.screens[this.currentScreen].changeFrom();
+      }
+    },
+
+
+    keyReleased: function() { // Input
+      if (this.screens[this.currentScreen] != null)
+        this.screens[this.currentScreen].keyReleased();
+    }
+
+    // #endregion
+
+  };
+
+
+  gameController.init();
 }
 
 // #endregion
@@ -617,18 +763,18 @@ function setup() { // Setup variables and canvas
 
 function draw() { // Called each frame
   background(0);
-  game0.update();
-  game0.show();
+  gameController.update();
+  gameController.show();
 }
 
 
 function keyPressed() { // Input
-  game0.keyPressed();
+  gameController.keyPressed();
 }
 
 
 function keyReleased() { // Input
-  game0.keyReleased();
+  gameController.keyReleased();
 }
 
 
