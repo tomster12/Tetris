@@ -19,6 +19,8 @@
 
 
 //    TODO
+// Add highscore using php
+// Add website surrounding canvas
 // Add direction indicator
 // Art for each color of piece
 // Art for board and background
