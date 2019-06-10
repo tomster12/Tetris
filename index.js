@@ -15,9 +15,6 @@
 //   if use this then move half the board in direction
 
 
-// testing git control
-
-
 //    TODO
 // Add direction indicator
 // Add score
