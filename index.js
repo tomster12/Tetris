@@ -405,7 +405,7 @@ function setup() { // Setup variables and canvas
 
 
     changeTo: function() { // Called when changed to
-
+      this.board.reset();
     },
 
 
