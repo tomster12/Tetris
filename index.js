@@ -782,9 +782,6 @@ function setup() { // Setup variables and canvas
 
 
     keyPressed: function() {
-      if (keyCode == 81) // Start game
-        this.start();
-
       if (this.running) {
         if (keyCode == 90) // Rotation
         this.piece.rotate(1);
