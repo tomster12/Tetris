@@ -23,6 +23,8 @@
 
 
 //    TODO
+// Optimize showOutput
+// Use ajax with php and text files for highscores
 // Add init for endscreen and use this.game0
 // Add website surrounding canvas
 // Add direction indicator
