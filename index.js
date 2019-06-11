@@ -11,17 +11,19 @@
 // Add score
 // Seperate screens for menu / Title
 // Start button
+// Fix highscore placement
+// Reset ghost after reset
+// Add highscores using localStorage *1
 
 
 //      TODONT
-// Potentially gain score from lines around outside
+// Potentially gain score from only lines around outside
 //   if use this then move half the board in direction
+// Add highscore using php *1
 
 
 //    TODO
-// Fix highscore placement
-// Reset ghost after reset
-// Add highscore using php
+// Add init for endscreen and use this.game0
 // Add website surrounding canvas
 // Add direction indicator
 // Art for each color of piece
@@ -36,7 +38,7 @@ let gameController;
 
 
 function setup() { // Setup variables and canvas
-  createCanvas(800, 800);
+  createCanvas(600, 600);
   noStroke();
   fill(255);
 
@@ -73,11 +75,11 @@ function setup() { // Setup variables and canvas
 
 
     show: function() { // Called each frame after update
-      textSize(50);
+      textSize(40);
       textAlign(CENTER);
       fill(255);
       noStroke();
-      text("Tetris 360", width/2, height/2+25);
+      text("Tetris 360", width/2, height/2+20);
     },
 
 
@@ -109,9 +111,9 @@ function setup() { // Setup variables and canvas
     // #region - Variables
 
     screenName: "menu",
-    buttonsStart: createVector(width/2, height/2-50),
+    buttonsStart: createVector(width/2, height/2-30),
     buttonsDifference: createVector(0, 100),
-    buttonSize: createVector(200, 70),
+    buttonSize: createVector(175, 60),
     buttons: [
       {text: "play", func: function() {
         menu.changeFrom();
@@ -221,12 +223,28 @@ function setup() { // Setup variables and canvas
       pos: createVector(width - 120, height - 75),
       size: createVector(85, 50),
     },
-    endScreen: {
-      pos: createVector(160, 60),
-      size: createVector(width - 320, height - 120),
+
+    running: false, // Internal variables
+    hasReset: true,
+    score: 0,
+    inputs: [false, false, false, false],
+    pieceList: [[], [], [], []],
+    spawnsValid: [true, true, true, true],
+    holdPieceType: null,
+    canHold: true,
+    score: 0,
+    highScores: null,
+
+
+    endScreen: { // End screen
+
+      // #region - Variables
+
+      pos: createVector(120, 60),
+      size: createVector(width - 240, height - 120),
       inputBox: {
-        pos: createVector(140 + (width-200) - 280, 60 + 115),
-        size: createVector(100, 50),
+        pos: createVector(140 + (width - 240) - 180, 60 + 90),
+        size: createVector(85, 40),
         text: "",
         selected: false,
         submitted: false,
@@ -246,29 +264,71 @@ function setup() { // Setup variables and canvas
             localStorage.setItem("highScores", JSON.stringify(game0.highScores));
           }
         }
+      },
+
+      // #endregion
+
+
+      // #region - Functions
+
+      show: function() {
+
+        stroke(255); // Show main background
+        fill(0);
+        rect(this.pos.x, this.pos.y,
+        this.size.x, this.size.y);
+        noStroke();
+        fill(255);
+
+        textAlign(CENTER); // Show text
+        textSize(35);
+        text("Game Over", this.pos.x + this.size.x/2,
+        this.pos.y + 60);
+
+        textAlign(LEFT);
+        textSize(18);
+        text("Score: " + this.score, this.pos.x + this.size.x/2 - 150,
+        this.pos.y + 120);
+
+        textSize(18); // Show highscores
+        for (let i = 0; i < 10; i++) {
+          let cx = this.pos.x + this.size.x/2;
+          let cy = this.pos.y + 160 + 32 * i;
+          ellipse(cx - 150, cy, 10, 10);
+          if (game0.highScores != null && game0.highScores.length > i) {
+            textAlign(LEFT);
+            text(game0.highScores[i].name, cx - 120, cy+8);
+            textAlign(RIGHT);
+            text(game0.highScores[i].score, cx + 120, cy+8);
+          }
+        }
+
+        stroke(255); // Show input box
+        noFill();
+        textAlign(LEFT);
+        rect(this.inputBox.pos.x, this.inputBox.pos.y,
+        this.inputBox.size.x, this.inputBox.size.y);
+        noStroke();
+        fill(this.inputBox.text=="" ? 180 : 255);
+        let outputText = this.inputBox.selected
+        ? this.inputBox.text + (frameCount % 20 < 10 ? "|" : "")
+        : this.inputBox.text=="" ? "Name..." : this.inputBox.text;
+        text(outputText, this.inputBox.pos.x + 12 ,
+        this.inputBox.pos.y + this.inputBox.size.y/2 + 7);
       }
+
+      // #endregion
+
     },
-
-
-    running: false, // Internal variables
-    hasReset: true,
-    score: 0,
-    inputs: [false, false, false, false],
-    pieceList: [[], [], [], []],
-    spawnsValid: [true, true, true, true],
-    holdPieceType: null,
-    canHold: true,
-    score: 0,
-    highScores: null,
 
 
     board: { // Board
 
       // #region - Variables
 
-      pos: createVector(150, 150), // Constants variables
+      pos: createVector(125, 125), // Constants variables
       size: createVector(21, 21),
-      scale: createVector(width-300, height-300),
+      scale: createVector(width-250, height-250),
 
       game0: null, // Internal variables
       game: null,
@@ -772,51 +832,7 @@ function setup() { // Setup variables and canvas
       this.startButton.pos.x + this.startButton.size.x/2,
       this.startButton.pos.y + this.startButton.size.y/2+8);
 
-      if (!this.running && !this.hasReset) { // Show end screen
-        stroke(255);
-        fill(0);
-        rect(this.endScreen.pos.x, this.endScreen.pos.y,
-        this.endScreen.size.x, this.endScreen.size.y);
-
-        noStroke();
-        fill(255);
-
-        textAlign(CENTER);
-        textSize(50);
-        text("Game Over", this.endScreen.pos.x + this.endScreen.size.x/2,
-        this.endScreen.pos.y + 80);
-
-        textAlign(LEFT);
-        textSize(30);
-        text("Score: " + this.score, this.endScreen.pos.x + this.endScreen.size.x/2 - 150,
-        this.endScreen.pos.y + 150);
-
-        textSize(20);
-        for (let i = 0; i < 10; i++) {
-          let cx = this.endScreen.pos.x + this.endScreen.size.x/2;
-          let cy = this.endScreen.pos.y + 220 + 45 * i;
-          ellipse(cx - 175, cy, 10, 10);
-          if (this.highScores != null && this.highScores.length > i) {
-            textAlign(LEFT);
-            text(this.highScores[i].name, cx - 150, cy+8);
-            textAlign(RIGHT);
-            text(this.highScores[i].score, cx + 150, cy+8);
-          }
-        }
-
-        stroke(255); // Show input box
-        noFill();
-        textAlign(LEFT);
-        rect(this.endScreen.inputBox.pos.x, this.endScreen.inputBox.pos.y,
-        this.endScreen.inputBox.size.x, this.endScreen.inputBox.size.y);
-        noStroke();
-        fill(this.endScreen.inputBox.text=="" ? 180 : 255);
-        let outputText = this.endScreen.inputBox.selected
-        ? this.endScreen.inputBox.text + (frameCount % 20 < 10 ? "|" : "")
-        : this.endScreen.inputBox.text=="" ? "Name..." : this.endScreen.inputBox.text;
-        text(outputText, this.endScreen.inputBox.pos.x + 15,
-        this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y/2 + 7);
-      }
+      if (!this.running && !this.hasReset) this.endScreen.show();
     },
 
 
