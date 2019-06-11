@@ -19,6 +19,8 @@
 
 
 //    TODO
+// Fix highscore placement
+// Reset ghost after reset
 // Add highscore using php
 // Add website surrounding canvas
 // Add direction indicator
@@ -208,12 +210,30 @@ function setup() { // Setup variables and canvas
       size: createVector(85, 50),
     },
     endScreen: {
-      pos: createVector(140, 60),
-      size: createVector(width - 280, height - 120),
+      pos: createVector(160, 60),
+      size: createVector(width - 320, height - 120),
       inputBox: {
-        pos: createVector(140 + (width-200) - 350, 60 + 117),
+        pos: createVector(140 + (width-200) - 280, 60 + 115),
         size: createVector(100, 50),
-        text: ""
+        text: "",
+        selected: false,
+        submitted: false,
+
+        submit: function() {
+          if (!this.submitted) {
+            console.log("submitting");
+            this.selected = false;
+            this.submitted = true;
+            if (game0.highScores == null)
+              game0.highScores = [];
+            let i = game0.highScores.length-1;
+            for (; i >= 0; i--)
+              if (game0.score < game0.highScores[i])
+                break;
+            game0.highScores.splice(i+1, 0, {"name": this.text, "score": game0.score});
+            localStorage.setItem("highScores", JSON.stringify(game0.highScores));
+          }
+        }
       }
     },
 
@@ -234,9 +254,9 @@ function setup() { // Setup variables and canvas
 
       // #region - Variables
 
-      pos: createVector(100, 100), // Constants variables
+      pos: createVector(150, 150), // Constants variables
       size: createVector(21, 21),
-      scale: createVector(width-200, height-200),
+      scale: createVector(width-300, height-300),
 
       game0: null, // Internal variables
       game: null,
@@ -606,6 +626,7 @@ function setup() { // Setup variables and canvas
 
       this.board.reset();
       this.piece.generateNew(1);
+      this.endScreen.inputBox.submitted = false;
 
       this.piece.toMove = true;
       this.piece.toSprint = false;
@@ -632,6 +653,7 @@ function setup() { // Setup variables and canvas
       this.piece.toPlace = false;
       this.piece.moveTimer = 0;
       this.piece.inputTimer = 0;
+      this.piece.ghostPos = null;
 
       this.highScores = JSON.parse(localStorage.getItem("highScores"));
       console.log("lost");
@@ -651,33 +673,31 @@ function setup() { // Setup variables and canvas
       textSize(20);
       noStroke();
       fill(255);
-      text("Score: " + this.score, this.board.pos.x+this.board.scale.x+10, this.board.pos.y-42);
+      text("Score: " + this.score, width-80, 60);
 
       let pieceSpacing = 50; // Show hold and pieceList for each direction based on boardPos
       let pieceSize = 40;
       let pieceShowScale = 0.75;
 
-      let pcx = this.board.pos.x - pieceSpacing; // Draw hold piece - Use piece spacing
-      let pcy = this.board.pos.y - pieceSpacing;
-      let p0x = pcx - pieceSpacing/2;
-      let p0y = pcy - pieceSpacing/2;
+      let pcx = pieceSpacing; // Draw hold piece - Use piece spacing
+      let pcy = pieceSpacing;
       strokeWeight(1);
       stroke(255);
       noFill();
-      rect(p0x, p0y, pieceSpacing, pieceSpacing);
+      rect(pcx - pieceSpacing/2, pcy - pieceSpacing/2, pieceSpacing, pieceSpacing);
       if (this.holdPieceType != null) {
         let dif = (pieceShowScale*pieceSpacing/4);
         let pWidth = pieces[this.holdPieceType][4].length;
         let pHeight = pieces[this.holdPieceType][4][0].length;
-        let p1x = pcx - dif * pWidth/2;
-        let p1y = pcy - dif * pHeight/2;
+        let ppx = pcx - dif * pWidth/2;
+        let ppy = pcy - dif * pHeight/2;
         for (let x = 0; x < pWidth; x++) {
           for (let y = 0; y < pHeight; y++) {
             let val = pieces[this.holdPieceType][4][x][y];
             if (val != 0) {
               let col = colors[val+colorsNonPieceLimit];
               fill(col[0], col[1], col[2]);
-              rect(p1x + x*dif, p1y + y*dif, dif, dif);
+              rect(ppx + x*dif, ppy + y*dif, dif, dif);
             }
           }
         }
@@ -776,16 +796,16 @@ function setup() { // Setup variables and canvas
 
         stroke(255); // Show input box
         noFill();
+        textAlign(LEFT);
         rect(this.endScreen.inputBox.pos.x, this.endScreen.inputBox.pos.y,
         this.endScreen.inputBox.size.x, this.endScreen.inputBox.size.y);
-        rect(this.endScreen.inputBox.pos.x + this.endScreen.inputBox.size.x + 10 + 5, this.endScreen.inputBox.pos.y + 5,
-        this.endScreen.inputBox.size.y - 10, this.endScreen.inputBox.size.y - 10);
         noStroke();
         fill(this.endScreen.inputBox.text=="" ? 180 : 255);
-        textAlign(LEFT);
-        let outputText = this.endScreen.inputBox.text=="" ? "Name..." : this.endScreen.inputBox.text;
+        let outputText = this.endScreen.inputBox.selected
+        ? this.endScreen.inputBox.text + (frameCount % 20 < 10 ? "|" : "")
+        : this.endScreen.inputBox.text=="" ? "Name..." : this.endScreen.inputBox.text;
         text(outputText, this.endScreen.inputBox.pos.x + 15,
-        this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y/2 + 8);
+        this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y/2 + 7);
       }
     },
 
@@ -875,6 +895,17 @@ function setup() { // Setup variables and canvas
           ||  inputDirection == (this.piece.direction+5)%4
           ) this.piece.move(offset.x, offset.y);
         }
+
+      } else { // Type into input box
+        if (!this.hasReset && this.endScreen.inputBox.selected && !this.endScreen.inputBox.submitted) {
+            let allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ1234567890";
+            if (allowed.includes(key) && this.endScreen.inputBox.text.length < 6)
+              this.endScreen.inputBox.text += key;
+            if (keyCode == 8)
+              this.endScreen.inputBox.text = this.endScreen.inputBox.text.slice(0, -1);
+            if (keyCode == 13 && this.endScreen.inputBox.text != "")
+                this.endScreen.inputBox.submit();
+        }
       }
     },
 
@@ -899,6 +930,14 @@ function setup() { // Setup variables and canvas
           if (!this.hasReset) this.reset();
           else this.start();
         } else this.lose();
+      }
+
+      if (!this.running && !this.hasReset && !this.endScreen.inputBox.submitted) { // Select input box
+        this.endScreen.inputBox.selected = (
+          mouseX > this.endScreen.inputBox.pos.x
+        &&mouseX < this.endScreen.inputBox.pos.x + this.endScreen.inputBox.size.x
+        &&mouseY > this.endScreen.inputBox.pos.y
+        &&mouseY < this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y);
       }
     }
 
