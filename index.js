@@ -82,7 +82,9 @@ function setup() { // Setup variables and canvas
 
 
     keyPressed: function() { // Input
+      this.changeFrom();
       gameController.currentScreen = menu;
+      menu.changeTo();
     },
 
 
@@ -92,7 +94,9 @@ function setup() { // Setup variables and canvas
 
 
     mousePressed: function() { // Input
+      this.changeFrom();
       gameController.currentScreen = menu;
+      menu.changeTo();
     }
 
     // #endregion
@@ -109,8 +113,16 @@ function setup() { // Setup variables and canvas
     buttonsDifference: createVector(0, 100),
     buttonSize: createVector(200, 70),
     buttons: [
-      {text: "play", func: function() {gameController.currentScreen = game0;}},
-      {text: "back", func: function() {gameController.currentScreen = title;}}
+      {text: "play", func: function() {
+        menu.changeFrom();
+        gameController.currentScreen = game0;
+        game0.changeTo();
+      }},
+      {text: "back", func: function() {
+        menu.changeFrom();
+        gameController.currentScreen = title;
+        title.changeTo();
+      }}
     ],
 
     // #endregion
@@ -413,7 +425,6 @@ function setup() { // Setup variables and canvas
       toPlace: false,
 
       moveTimer: null, // Timing variables
-      sprintTimer: null,
       inputTimer: null,
 
       // #endregion
@@ -436,7 +447,7 @@ function setup() { // Setup variables and canvas
 
           if (this.game0.inputs[(this.direction + 1) % 4] // Movement based on input
           ||  this.game0.inputs[(this.direction + 3) % 4]) {
-            this.inputTimer++;
+            this.inputTimer += 60/frameRate();
             if (this.inputTimer >= this.inputLimit) {
               if (this.game0.inputs[(this.direction + 1) % 4]) {
                 let offset = vectorFromDirection((this.direction + 1) % 4);
@@ -450,7 +461,7 @@ function setup() { // Setup variables and canvas
             }
           }
 
-          this.moveTimer++; // Movement based on direction
+          this.moveTimer += 60/frameRate(); // Movement based on direction
           this.toSprint = this.game0.inputs[this.direction];
           if ((this.toSprint && (this.moveTimer >= this.sprintLimit))
           ||(!this.toSprint && (this.moveTimer >= this.moveLimit))) {
@@ -654,7 +665,6 @@ function setup() { // Setup variables and canvas
       this.piece.moveTimer = 0;
       this.piece.inputTimer = 0;
       this.piece.ghostPos = null;
-
       this.highScores = JSON.parse(localStorage.getItem("highScores"));
       console.log("lost");
     },
