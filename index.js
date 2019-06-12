@@ -17,6 +17,7 @@
 // Art for each color of piece
 // Optimize showOutput - Speed up with images
 // Movement based on time to counter act optimization
+// Add website surrounding canvas
 
 
 //      TODONT
@@ -29,7 +30,6 @@
 // Find better font and clean up gamescreen
 // Use ajax with php and text files for highscores *1
 // Add init for endscreen and use this.game0
-// Add website surrounding canvas
 // Add direction indicator
 // Art for board and background
 // Sound effects
