@@ -223,18 +223,36 @@ let pieces = [
 ];
 
 
-let colorsNonPieceLimit = 3;
-let colors = [
-  [0,  0,  0], // Background
-  [120, 120, 120], // Centre
-  [30, 30, 30], // Spawn valid
-  [158, 70, 55], // Spawn invalid
+// let colors = [
+//   [0,  0,  0], // Background
+//   [120, 120, 120], // Centre
+//   [30, 30, 30], // Spawn valid
+//   [158, 70, 55], // Spawn invalid
+//
+//   [114, 192, 203], // Line
+//   [199, 77, 51], // S
+//   [98, 212, 95], // Z
+//   [228, 179, 82], // L
+//   [82, 100, 224], // J
+//   [214, 215, 121], // O
+//   [110, 71, 228] // T
+// ];
 
-  [114, 192, 203], // Line
-  [199, 77, 51], // S
-  [98, 212, 95], // Z
-  [228, 179, 82], // L
-  [82, 100, 224], // J
-  [214, 215, 121], // O
-  [110, 71, 228] // T
-];
+let images;
+let imagesNonPieceLimit = 3;
+function loadImages() {
+  images = [
+    loadImage("Assets/Images/Pieces/BlackBackground.png"),
+    loadImage("Assets/Images/Pieces/GreyCentre.png"),
+    loadImage("Assets/Images/Pieces/DarkGreySpawnValid.png"),
+    loadImage("Assets/Images/Pieces/DarkRedSpawnInvalid.png"),
+
+    loadImage("Assets/Images/Pieces/LightBlueI.png"),
+    loadImage("Assets/Images/Pieces/RedS.png"),
+    loadImage("Assets/Images/Pieces/GreenZ.png"),
+    loadImage("Assets/Images/Pieces/OrangeL.png"),
+    loadImage("Assets/Images/Pieces/BlueJ.png"),
+    loadImage("Assets/Images/Pieces/PeachO.png"),
+    loadImage("Assets/Images/Pieces/PurpleT.png")
+  ];
+}

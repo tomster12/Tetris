@@ -35,8 +35,14 @@
 
 // #region - Setup
 
+p5.disableFriendlyErrors = true;
 let title, menu, game0;
 let gameController;
+
+
+function preload() { // Load images
+  loadImages();
+}
 
 
 function setup() { // Setup variables and canvas
@@ -289,7 +295,7 @@ function setup() { // Setup variables and canvas
 
         textAlign(LEFT);
         textSize(18);
-        text("Score: " + this.score, this.pos.x + this.size.x/2 - 150,
+        text("Score: " + game0.score, this.pos.x + this.size.x/2 - 150,
         this.pos.y + 120);
 
         textSize(18); // Show highscores
@@ -400,7 +406,7 @@ function setup() { // Setup variables and canvas
               let px = this.game0.piece.pos.x + x;
               let py = this.game0.piece.pos.y + y;
               let val = pieces[this.game0.piece.type][this.game0.piece.rotation][x][y];
-              if (val != 0) this.output[px][py] = val+colorsNonPieceLimit;
+              if (val != 0) this.output[px][py] = val+imagesNonPieceLimit;
             }
           }
         }
@@ -414,18 +420,7 @@ function setup() { // Setup variables and canvas
           for (let y = 0; y < this.size.y; y++) {
             let px = this.pos.x + x*xDif;
             let py = this.pos.y + y*yDif;
-
-            if (this.output[x][y] > colorsNonPieceLimit) {
-              stroke(255);
-              strokeWeight(2);
-            } else {
-              stroke(120);
-              strokeWeight(1);
-            }
-
-            let col = colors[this.output[x][y]];
-            fill(col[0], col[1], col[2]);
-            rect(px, py, xDif, yDif);
+            image(images[this.output[x][y]], px+1, py+1, xDif-2, yDif-2);
           }
         }
 
@@ -608,7 +603,7 @@ function setup() { // Setup variables and canvas
             let px = this.pos.x + x;
             let py = this.pos.y + y;
             let val = pieces[this.type][this.rotation][x][y];
-            if (val!=0) this.game0.board.game[px][py] = val+colorsNonPieceLimit;
+            if (val!=0) this.game0.board.game[px][py] = val+imagesNonPieceLimit;
           }
         }
         this.game0.canHold = true;
@@ -766,11 +761,8 @@ function setup() { // Setup variables and canvas
         for (let x = 0; x < pWidth; x++) {
           for (let y = 0; y < pHeight; y++) {
             let val = pieces[this.holdPieceType][4][x][y];
-            if (val != 0) {
-              let col = colors[val+colorsNonPieceLimit];
-              fill(col[0], col[1], col[2]);
-              rect(ppx + x*dif, ppy + y*dif, dif, dif);
-            }
+            if (val != 0)
+              image(images[val+imagesNonPieceLimit], ppx + x*dif, ppy + y*dif, dif, dif);
           }
         }
       }
@@ -805,11 +797,8 @@ function setup() { // Setup variables and canvas
             for (let x = 0; x < pWidth; x++) {
               for (let y = 0; y < pHeight; y++) {
                 let val = pieces[this.pieceList[i][o]][4][x][y];
-                if (val != 0) {
-                  let col = colors[val+colorsNonPieceLimit];
-                  fill(col[0], col[1], col[2]);
-                  rect(p1x + x*dif, p1y + y*dif, dif, dif);
-                }
+                if (val != 0)
+                  image(images[val+imagesNonPieceLimit], p1x + x*dif, p1y + y*dif, dif, dif);
               }
             }
           }
