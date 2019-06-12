@@ -14,6 +14,9 @@
 // Fix highscore placement
 // Reset ghost after reset
 // Add highscores using localStorage *1
+// Art for each color of piece
+// Optimize showOutput - Speed up with images
+// Movement based on time to counter act optimization
 
 
 //      TODONT
@@ -23,12 +26,11 @@
 
 
 //    TODO
-// Optimize showOutput
-// Use ajax with php and text files for highscores
+// Find better font and clean up gamescreen
+// Use ajax with php and text files for highscores *1
 // Add init for endscreen and use this.game0
 // Add website surrounding canvas
 // Add direction indicator
-// Art for each color of piece
 // Art for board and background
 // Sound effects
 
@@ -262,13 +264,20 @@ function setup() { // Setup variables and canvas
             console.log("submitting");
             this.selected = false;
             this.submitted = true;
+
             if (game0.highScores == null)
               game0.highScores = [];
-            let i = game0.highScores.length-1;
-            for (; i >= 0; i--)
-              if (game0.score < game0.highScores[i])
+
+            let toPlaceAt = game0.highScores.length;
+            for (let i = 0; i < game0.highScores.length; i++) {
+              if (game0.score > game0.highScores[i].score) {
+                toPlaceAt = i;
                 break;
-            game0.highScores.splice(i+1, 0, {"name": this.text, "score": game0.score});
+              }
+            }
+
+            console.log("placing score at " + toPlaceAt);
+            game0.highScores.splice(toPlaceAt, 0, {"name": this.text, "score": game0.score});
             localStorage.setItem("highScores", JSON.stringify(game0.highScores));
           }
         }
@@ -1031,17 +1040,20 @@ function draw() { // Called each frame
 
 
 function keyPressed() { // Input
-  gameController.keyPressed();
+  if (gameController != null)
+    gameController.keyPressed();
 }
 
 
 function keyReleased() { // Input
-  gameController.keyReleased();
+  if (gameController != null)
+    gameController.keyReleased();
 }
 
 
 function mousePressed() { // Input
-  gameController.mousePressed();
+  if (gameController != null)
+    gameController.mousePressed();
 }
 
 
