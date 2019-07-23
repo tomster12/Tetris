@@ -19,14 +19,13 @@
 // Movement based on time to counter act optimization
 // Add website surrounding canvas
 
-
 //      TODONT
 // Potentially gain score from only lines around outside
 //   if use this then move half the board in direction
 // Add highscore using php *1
 
-
 //    TODO
+// Make a 2x2 centre to better line up with spawn zones
 // Find better font and clean up gamescreen
 // Use ajax with php and text files for highscores *1
 // Add init for endscreen and use this.game0
@@ -99,11 +98,9 @@ function setup() { // Setup variables and canvas
       menu.changeTo();
     },
 
-
     keyReleased: function() { // Input
 
     },
-
 
     mousePressed: function() { // Input
       this.changeFrom();
@@ -126,14 +123,14 @@ function setup() { // Setup variables and canvas
     buttonSize: createVector(175, 60),
     buttons: [
       {text: "play", func: function() {
-        menu.changeFrom();
+        gameController.currentScreen.changeFrom();
         gameController.currentScreen = game0;
-        game0.changeTo();
+        gameController.currentScreen.changeTo();
       }},
       {text: "back", func: function() {
-        menu.changeFrom();
+        gameController.currentScreen.changeFrom();
         gameController.currentScreen = title;
-        title.changeTo();
+        gameController.currentScreen.changeTo();
       }}
     ],
 
@@ -177,9 +174,9 @@ function setup() { // Setup variables and canvas
 
         noFill();
         if (mouseX > cx - this.buttonSize.x/2
-        &&mouseX < cx + this.buttonSize.x/2
-        &&mouseY > cy - this.buttonSize.y/2
-        &&mouseY < cy + this.buttonSize.y/2)
+        && mouseX < cx + this.buttonSize.x/2
+        && mouseY > cy - this.buttonSize.y/2
+        && mouseY < cy + this.buttonSize.y/2)
           fill(50);
         stroke(255);
         rect(
@@ -199,11 +196,9 @@ function setup() { // Setup variables and canvas
 
     },
 
-
     keyReleased: function() { // Input
 
     },
-
 
     mousePressed: function() { // Input
       for (let i = 0; i < this.buttons.length; i++) {
@@ -252,6 +247,7 @@ function setup() { // Setup variables and canvas
 
       pos: createVector(120, 60),
       size: createVector(width - 240, height - 120),
+      
       inputBox: {
         pos: createVector(140 + (width - 240) - 180, 60 + 90),
         size: createVector(85, 40),
@@ -935,7 +931,6 @@ function setup() { // Setup variables and canvas
       }
     },
 
-
     keyReleased: function() {
       if (this.running) {
         if (keyCode >= 37 && keyCode <= 40) { // Movement
@@ -945,7 +940,6 @@ function setup() { // Setup variables and canvas
         }
       }
     },
-
 
     mousePressed: function() { // Input
       if (mouseX > this.startButton.pos.x // Check for play button
@@ -1007,12 +1001,10 @@ function setup() { // Setup variables and canvas
         this.currentScreen.keyPressed();
     },
 
-
     keyReleased: function() { // Input
       if (this.currentScreen != null)
         this.currentScreen.keyReleased();
     },
-
 
     mousePressed: function() { // Input
       if (this.currentScreen != null)
@@ -1044,12 +1036,10 @@ function keyPressed() { // Input
     gameController.keyPressed();
 }
 
-
 function keyReleased() { // Input
   if (gameController != null)
     gameController.keyReleased();
 }
-
 
 function mousePressed() { // Input
   if (gameController != null)
