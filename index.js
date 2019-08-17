@@ -103,9 +103,9 @@ function setup() { // Setup variables and canvas
     },
 
     mousePressed: function() { // Input
-      this.changeFrom();
+      gameController.currentScreen.changeFrom();
       gameController.currentScreen = menu;
-      menu.changeTo();
+      gameController.currentScreen.changeTo();
     }
 
     // #endregion
@@ -247,7 +247,7 @@ function setup() { // Setup variables and canvas
 
       pos: createVector(120, 60),
       size: createVector(width - 240, height - 120),
-      
+
       inputBox: {
         pos: createVector(140 + (width - 240) - 180, 60 + 90),
         size: createVector(85, 40),
