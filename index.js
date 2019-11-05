@@ -18,17 +18,24 @@
 // Optimize showOutput - Speed up with images
 // Movement based on time to counter act optimization
 // Add website surrounding canvas
+// Make a 2x2 centre to better line up with spawn zones
+// Change to use a 700x700 canvas
 
 //      TODONT
 // Potentially gain score from only lines around outside
 //   if use this then move half the board in direction
 // Add highscore using php *1
+// Get list of what each board value means
+//    - check data.js
 
 //    TODO
-// Make a 2x2 centre to better line up with spawn zones
+// Make pieceList an object holding all variables and functions
+// Use a better piece selection algorithm
+// Speed up over time
+
 // Find better font and clean up gamescreen
 // Use ajax with php and text files for highscores *1
-// Add init for endscreen and use this.game0
+// Add init for endscreen and use game0
 // Add direction indicator
 // Art for board and background
 // Sound effects
@@ -36,23 +43,32 @@
 
 // #region - Setup
 
+// Prevent arrow keys and space bar moving page about
+window.addEventListener("keydown", function(e) {
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1)
+      e.preventDefault();
+}, false);
+
+
 p5.disableFriendlyErrors = true;
 let title, menu, game0;
 let gameController;
 
 
-function preload() { // Load images
+function preload() {
+  // Load images
   loadImages();
 }
 
 
-function setup() { // Setup variables and canvas
-  createCanvas(600, 600);
+function setup() {
+  // Setup variables and canvas
+  createCanvas(700, 700);
   noStroke();
   fill(255);
 
-
-  title = { // Title
+  // Title screen object
+  title = {
 
     // #region - Variables
 
@@ -63,75 +79,66 @@ function setup() { // Setup variables and canvas
 
     // #region - Functions
 
-    init: function() { // Called during setup
-
+    init: function() {
+      // Called during setup
     },
 
 
-    changeTo: function() { // Called when changed to
-
+    changeTo: function() {
+      // Called when changed to
     },
 
 
-    changeFrom: function() { // Called when changed from
-
+    changeFrom: function() {
+      // Called when changed from
     },
 
 
-    update: function() { // Called each frame
-
+    update: function() {
+      // Called each frame
     },
 
 
-    show: function() { // Called each frame after update
+    show: function() {
+      // Called each frame after update
       textSize(40);
       textAlign(CENTER);
       fill(255);
       noStroke();
-      text("Tetris 360", width/2, height/2+20);
+      text("Tetris 360", width * 0.5, height * 0.5 + 20);
     },
 
 
-    keyPressed: function() { // Input
-      this.changeFrom();
-      gameController.currentScreen = menu;
-      menu.changeTo();
+    keyPressed: function() {
+      // Input
+      gameController.changeScreen(menu);
     },
 
-    keyReleased: function() { // Input
-
+    keyReleased: function() {
+      // Input
     },
 
-    mousePressed: function() { // Input
-      gameController.currentScreen.changeFrom();
-      gameController.currentScreen = menu;
-      gameController.currentScreen.changeTo();
-    }
+    mousePressed: function() {
+      // Input
+      gameController.changeScreen(menu);
+    },
 
     // #endregion
-
   };
 
 
-  menu = { // Menu
+  // Menu screen object
+  menu = {
 
     // #region - Variables
 
     screenName: "menu",
-    buttonsStart: createVector(width/2, height/2-30),
+    buttonsStart: createVector(width * 0.5, height * 0.5 - 30),
     buttonsDifference: createVector(0, 100),
     buttonSize: createVector(175, 60),
     buttons: [
-      {text: "play", func: function() {
-        gameController.currentScreen.changeFrom();
-        gameController.currentScreen = game0;
-        gameController.currentScreen.changeTo();
-      }},
-      {text: "back", func: function() {
-        gameController.currentScreen.changeFrom();
-        gameController.currentScreen = title;
-        gameController.currentScreen.changeTo();
-      }}
+      {text: "play", func: function() {gameController.changeScreen(game0);}},
+      {text: "back", func: function() {gameController.changeScreen(title);}}
     ],
 
     // #endregion
@@ -139,89 +146,93 @@ function setup() { // Setup variables and canvas
 
     // #region - Functions
 
-    init: function() { // Called during setup
-
+    init: function() {
+      // Called during setup
     },
 
 
-    changeTo: function() { // Called when changed to
-
+    changeTo: function() {
+      // Called when changed to
     },
 
 
-    changeFrom: function() { // Called when changed from
-
+    changeFrom: function() {
+      // Called when changed from
     },
 
 
-    update: function() { // Called each frame
-
+    update: function() {
+      // Called each frame
     },
 
 
-    show: function() { // Called each frame after update
-
+    show: function() {
+      // Show title
       textSize(35);
       textAlign(CENTER);
       noStroke();
       fill(255);
-      text("Tetris 360", width/2, height/2 - 150);
+      text("Tetris 360", width * 0.5, height * 0.5 - 150);
 
-      textSize(25); // Show buttons
+      // Show buttons
+      textSize(25);
       for (let i = 0; i < this.buttons.length; i++) {
-        let cx = this.buttonsStart.x + this.buttonsDifference.x*i;
-        let cy = this.buttonsStart.y + this.buttonsDifference.y*i;
+        let cx = this.buttonsStart.x + this.buttonsDifference.x * i;
+        let cy = this.buttonsStart.y + this.buttonsDifference.y * i;
 
-        noFill();
-        if (mouseX > cx - this.buttonSize.x/2
-        && mouseX < cx + this.buttonSize.x/2
-        && mouseY > cy - this.buttonSize.y/2
-        && mouseY < cy + this.buttonSize.y/2)
-          fill(50);
         stroke(255);
+        noFill();
+        if (mouseX > cx - this.buttonSize.x * 0.5
+        && mouseX < cx + this.buttonSize.x * 0.5
+        && mouseY > cy - this.buttonSize.y * 0.5
+        && mouseY < cy + this.buttonSize.y * 0.5)
+          fill(50);
+
         rect(
-          cx - this.buttonSize.x/2,
-          cy - this.buttonSize.y/2,
+          cx - this.buttonSize.x * 0.5,
+          cy - this.buttonSize.y * 0.5,
           this.buttonSize.x, this.buttonSize.y
         );
 
         fill(255);
         noStroke();
-        text(this.buttons[i].text, cx, cy+11);
+        text(this.buttons[i].text, cx, cy + 11);
       }
     },
 
 
-    keyPressed: function() { // Input
-
+    keyPressed: function() {
+      // Input
     },
 
-    keyReleased: function() { // Input
-
+    keyReleased: function() {
+      // Input
     },
 
-    mousePressed: function() { // Input
+    mousePressed: function() {
+      // Input
       for (let i = 0; i < this.buttons.length; i++) {
         let cx = this.buttonsStart.x + this.buttonsDifference.x*i;
         let cy = this.buttonsStart.y + this.buttonsDifference.y*i;
-        if (mouseX > cx - this.buttonSize.x/2
-        &&mouseX < cx + this.buttonSize.x/2
-        &&mouseY > cy - this.buttonSize.y/2
-        &&mouseY < cy + this.buttonSize.y/2)
+        if (mouseX > cx - this.buttonSize.x * 0.5
+        && mouseX < cx + this.buttonSize.x * 0.5
+        && mouseY > cy - this.buttonSize.y * 0.5
+        && mouseY < cy + this.buttonSize.y * 0.5)
           this.buttons[i].func();
       }
     }
 
     // #endregion
-
   };
 
 
-  game0 = { // Game
+  // Game screen object
+  game0 = {
 
     // #region - Variables
 
-    maxPiece: 7, // Constant variables
+    // Constant variables
+    maxPiece: 7,
     pieceListAmount: 4,
     screenName: "game0",
     startButton: {
@@ -229,7 +240,8 @@ function setup() { // Setup variables and canvas
       size: createVector(85, 50),
     },
 
-    running: false, // Internal variables
+    // Internal variables
+    running: false,
     hasReset: true,
     score: 0,
     inputs: [false, false, false, false],
@@ -241,7 +253,8 @@ function setup() { // Setup variables and canvas
     highScores: null,
 
 
-    endScreen: { // End screen
+    // End screen object
+    endScreen: {
 
       // #region - Variables
 
@@ -295,17 +308,17 @@ function setup() { // Setup variables and canvas
 
         textAlign(CENTER); // Show text
         textSize(35);
-        text("Game Over", this.pos.x + this.size.x/2,
+        text("Game Over", this.pos.x + this.size.x * 0.5,
         this.pos.y + 60);
 
         textAlign(LEFT);
         textSize(18);
-        text("Score: " + game0.score, this.pos.x + this.size.x/2 - 150,
+        text("Score: " + game0.score, this.pos.x + this.size.x * 0.5 - 150,
         this.pos.y + 120);
 
         textSize(18); // Show highscores
         for (let i = 0; i < 10; i++) {
-          let cx = this.pos.x + this.size.x/2;
+          let cx = this.pos.x + this.size.x * 0.5;
           let cy = this.pos.y + 160 + 32 * i;
           ellipse(cx - 150, cy, 10, 10);
           if (game0.highScores != null && game0.highScores.length > i) {
@@ -327,7 +340,7 @@ function setup() { // Setup variables and canvas
         ? this.inputBox.text + (frameCount % 20 < 10 ? "|" : "")
         : this.inputBox.text=="" ? "Name..." : this.inputBox.text;
         text(outputText, this.inputBox.pos.x + 12 ,
-        this.inputBox.pos.y + this.inputBox.size.y/2 + 7);
+        this.inputBox.pos.y + this.inputBox.size.y * 0.5 + 7);
       }
 
       // #endregion
@@ -335,15 +348,18 @@ function setup() { // Setup variables and canvas
     },
 
 
-    board: { // Board
+    // Board screen object
+    board: {
 
       // #region - Variables
 
-      pos: createVector(125, 125), // Constants variables
-      size: createVector(21, 21),
+      // Constants variables
+      pos: createVector(125, 125),
+      size: createVector(20, 20),
       scale: createVector(width-250, height-250),
 
-      game0: null, // Internal variables
+      // Internal variables
+      game0: null,
       game: null,
       output: null,
 
@@ -352,12 +368,13 @@ function setup() { // Setup variables and canvas
 
       // #region - Functions
 
-      init: function(game0) { // Initialize the board
-        this.game0 = game0;
+      init: function() {
+        // Initialize the board
       },
 
 
-      reset: function() { // Setup board
+      reset: function() {
+        // Setup board
         console.log("resetting board");
         this.game = [];
         this.output = [];
@@ -369,35 +386,55 @@ function setup() { // Setup variables and canvas
             this.output[x].push(0);
           }
         }
-        this.game[int(this.size.x/2)][int(this.size.y/2)]=1;
-        this.output[int(this.size.x/2)][int(this.size.y/2)]=1;
+
+        // Setup centre
+        this.game[int(this.size.x * 0.5) - 1][int(this.size.y * 0.5) - 1] = 1;
+        this.game[int(this.size.x * 0.5)][int(this.size.y * 0.5) - 1] = 1;
+        this.game[int(this.size.x * 0.5) - 1][int(this.size.y * 0.5)] = 1;
+        this.game[int(this.size.x * 0.5)][int(this.size.y * 0.5)] = 1;
       },
 
 
-      update: function() { // Called each frame
+      update: function() {
+        // Called each frame
+        this.updateSpawnsValid();
         this.updateOutput();
       },
 
 
+      updateSpawnsValid: function() {
+        // Update spawnsValid
+        for (let dir = 0; dir < 4; dir++) {
+          let spawnPos = this.getSpawnPos(dir);
+          for (let x = 0; x < 4; x++) {
+            for (let y = 0; y < 4; y++) {
+              let nx = spawnPos.x + x;
+              let ny = spawnPos.y + y;
+              if (this.game[nx][ny] != 0)
+                game0.spawnsValid[dir] = false;
+            }
+          }
+        }
+      },
+
+
       updateOutput: function() {
-        for (let x = 0; x < this.size.x; x++) { // Update screenShow with screenGame
+        // Update output with game
+        for (let x = 0; x < this.size.x; x++) {
           for (let y = 0; y < this.size.y; y++) {
             this.output[x][y] = this.game[x][y];
           }
         }
 
-        for (let dir = 0; dir < 4; dir++) { // Update screenShow with spawn areas
-          let offset = vectorFromDirection(dir);
-          let spawnPos = createVector(
-            int((this.game0.board.size.x/2-2) * (1 + offset.x)),
-            int((this.game0.board.size.y/2-2) * (1 + offset.y))
-          );
+        // Update outut with spawn areas
+        for (let dir = 0; dir < 4; dir++) {
+          let spawnPos = this.getSpawnPos(dir);
           for (let x = 0; x < 4; x++) {
             for (let y = 0; y < 4; y++) {
               let nx = spawnPos.x + x;
               let ny = spawnPos.y + y;
               if (this.output[nx][ny] == 0) {
-                if (this.game0.spawnsValid[dir])
+                if (game0.spawnsValid[dir])
                   this.output[nx][ny] = 2;
                 else this.output[nx][ny] = 3;
               }
@@ -405,12 +442,13 @@ function setup() { // Setup variables and canvas
           }
         }
 
-        if (this.game0.running) {
-          for (let x = 0; x < 4; x++) { // Update screenShow with piece
+        // Update output with piece
+        if (game0.running) {
+          for (let x = 0; x < 4; x++) {
             for (let y = 0; y < 4; y++) {
-              let px = this.game0.piece.pos.x + x;
-              let py = this.game0.piece.pos.y + y;
-              let val = pieces[this.game0.piece.type][this.game0.piece.rotation][x][y];
+              let px = game0.piece.pos.x + x;
+              let py = game0.piece.pos.y + y;
+              let val = pieces[game0.piece.type][game0.piece.rotation][x][y];
               if (val != 0) this.output[px][py] = val+imagesNonPieceLimit;
             }
           }
@@ -419,33 +457,33 @@ function setup() { // Setup variables and canvas
 
 
       showOutput: function() {
-        let xDif = this.scale.x/this.size.x; // Show each cells in output
-        let yDif = this.scale.y/this.size.y;
+        // Show each cells in output
+        let xDif = this.scale.x / this.size.x;
+        let yDif = this.scale.y / this.size.y;
         for (let x = 0; x < this.size.x; x++) {
           for (let y = 0; y < this.size.y; y++) {
             let px = this.pos.x + x*xDif;
             let py = this.pos.y + y*yDif;
-            image(images[this.output[x][y]], px+1, py+1, xDif-2, yDif-2);
+            image(images[this.output[x][y]], px + 1, py + 1, xDif - 2, yDif - 2);
           }
         }
 
-        if (this.game0.piece.ghostPos != null) { // Show ghost
+        // Show ghost
+        if (game0.piece.ghostPos != null) {
+          noStroke();
+          fill(100, 100, 100, 100);
           for (let x = 0; x < 4; x++) {
             for (let y = 0; y < 4; y++) {
-              let bx = this.game0.piece.ghostPos.x + x;
-              let by = this.game0.piece.ghostPos.y + y;
+              let bx = game0.piece.ghostPos.x + x;
+              let by = game0.piece.ghostPos.y + y;
               let px = this.pos.x + bx * xDif;
               let py = this.pos.y + by * xDif;
 
-              let val0 = pieces[this.game0.piece.type][this.game0.piece.rotation][x][y];
+              let val0 = pieces[game0.piece.type][game0.piece.rotation][x][y];
               if (val0 != 0) {
-
                 let val1 = this.output[bx][by];
-                if(val1 == 0) {
-                  noStroke();
-                  fill(100, 100, 100, 100);
+                if(val1 == 0)
                   rect(px, py, xDif, yDif);
-                }
               }
             }
           }
@@ -453,40 +491,104 @@ function setup() { // Setup variables and canvas
       },
 
 
-      inBounds: function(x, y) { // Check whether a point is on the screen
-        let viable =
-          x >= 0
-          &&x < this.size.x
-          &&y >= 0
-          &&y < this.size.y;
-        return viable;
-      }
+      scoreFromLoops: function() {
+        // For every distance coming out from centre block
+        for (let dist = 1; dist <= int(this.size.x * 0.5) - 1; dist++) {
+          let x = int(this.size.x * 0.5) - dist - 1;
+          let y = int(this.size.y * 0.5) - dist - 1;
+
+          // Check if current distance is comspleted
+          let completed = true;
+          for (let dir = 0; dir < 4; dir++) {
+            let offset = vectorFromDirection(dir);
+            for (let i = 0; i < dist * 2 + 1; i++) {
+              x += offset.x;
+              y += offset.y;
+              if (this.game[x][y] == 0)
+                completed = false;
+            }
+          }
+
+          // If completed then remove
+          if (completed) {
+            game0.score += (dist * dist) * 40;
+            for (let dir = 0; dir < 4; dir++) {
+              let offset = vectorFromDirection(dir);
+              for (let i = 0; i < dist * 2 + 1; i++) {
+                x += offset.x;
+                y += offset.y;
+                this.game[x][y] = 0;
+              }
+            }
+          }
+        }
+      },
+
+
+      getSpawnPos: function(direction) {
+        // Return the top left corner of a spawn in a specific direction
+        let offset = vectorFromDirection(direction);
+        return createVector(
+          int((game0.board.size.x * 0.5 - 2) * (1 - offset.x)),
+          int((game0.board.size.y * 0.5 - 2) * (1 - offset.y))
+        );
+      },
+
+
+      inBounds: function(x, y) {
+        // Check whether a point is on the screen
+        return x >= 0
+        && x < this.size.x
+        && y >= 0
+        && y < this.size.y;
+      },
+
+
+
+      isViable: function(checkPiece, nx, ny, checkRotation) {
+        // Check whether a piece at a position and rotation is viable
+        for (let x = 0; x < 4; x++) {
+          for (let y = 0; y < 4; y++) {
+            let px = nx + x;
+            let py = ny + y;
+            let val = pieces[checkPiece][checkRotation][x][y];
+            if (val != 0) {
+              if (!this.inBounds(px, py)) return false;
+              if (this.game[px][py] != 0) return false;
+            }
+          }
+        }
+        return true;
+      },
 
       // #endregion
 
     },
 
 
-    piece: { // Piece
+    piece: {
 
       // #region - Variables
 
-      moveLimit: 20, // Constant variables
+      // Constant variables
+      moveLimit: 20,
       sprintLimit: 4,
       inputLimit: 10,
 
-      game0: null, // Internal variables
+      // Internal variables
       type: null,
       direction: null,
       Rotation: null,
       pos: null,
       ghostPos: null,
 
-      toMove: false, // Action variables
+      // Action variables
+      toMove: false,
       toSprint: false,
       toPlace: false,
 
-      moveTimer: null, // Timing variables
+      // Timing variables
+      moveTimer: null,
       inputTimer: null,
 
       // #endregion
@@ -494,53 +596,70 @@ function setup() { // Setup variables and canvas
 
       // #region - Functions
 
-      init: function(game0) { // Initialize piece variable
-        this.game0 = game0;
+      init: function() {
+        // Initialize
       },
 
 
-      update: function() { // Called each frame
+      update: function() {
+        // Called each frame
         this.updateMovement();
+        this.updateGhostPos();
       },
 
 
-      updateMovement: function() { // Move the piece based on input and timers
+      updateMovement: function() {
+        // Move the piece based on input and timers
         if (this.toMove) {
 
-          if (this.game0.inputs[(this.direction + 1) % 4] // Movement based on input
-          ||  this.game0.inputs[(this.direction + 3) % 4]) {
-            this.inputTimer += 60/frameRate();
+          // Sideways movement based on input
+          let dir = null;
+          if (game0.inputs[(this.direction + 1) % 4]) dir = (this.direction + 1) % 4;
+          if (game0.inputs[(this.direction + 3) % 4]) dir = (this.direction + 3) % 4;
+          if (dir) {
+            this.inputTimer += 60 / frameRate();
             if (this.inputTimer >= this.inputLimit) {
-              if (this.game0.inputs[(this.direction + 1) % 4]) {
-                let offset = vectorFromDirection((this.direction + 1) % 4);
-                this.move(offset.x, offset.y);
-              }
-              if (this.game0.inputs[(this.direction + 3) % 4]) {
-                let offset = vectorFromDirection((this.direction + 3) % 4);
-                this.move(offset.x, offset.y);
-              }
+              let offset = vectorFromDirection(dir);
+              this.move(offset.x, offset.y);
               this.inputTimer = 0;
             }
-          }
+          } else this.inputTimer = 0;
 
-          this.moveTimer += 60/frameRate(); // Movement based on direction
-          this.toSprint = this.game0.inputs[this.direction];
+          // forwards movement based on direction
+          this.moveTimer += 60 / frameRate();
+          this.toSprint = game0.inputs[this.direction];
           if ((this.toSprint && (this.moveTimer >= this.sprintLimit))
-          ||(!this.toSprint && (this.moveTimer >= this.moveLimit))) {
+          || (!this.toSprint && (this.moveTimer >= this.moveLimit))) {
             let offset = vectorFromDirection(this.direction);
+
+            // Try move if succesful set not to place
             if (this.move(offset.x, offset.y)) this.toPlace = false;
 
-            else if (this.toPlace) this.place(); // Try to place if cannot move
+            // Couldnt move and to place
+            else if (this.toPlace) this.place();
+
+            // Couldnt move and not to place
             else this.toPlace = true;
+
+            // Update timer
             this.moveTimer = 0;
           }
+        }
+      },
 
-          let offset = vectorFromDirection(this.direction); // Update ghostPos
+
+      updateGhostPos: function() {
+        // Can potentially remove this check TODO check
+        if (this.toMove) {
+          console.log(this.toMove);
+
+          // Update ghostPos
+          let offset = vectorFromDirection(this.direction);
           this.ghostPos = this.pos.copy().sub(offset);
           let found = false;
-          while (this.isViable(this.type,
-          this.ghostPos.x+offset.x,
-          this.ghostPos.y+offset.y,
+          while (game0.board.isViable(this.type,
+          this.ghostPos.x + offset.x,
+          this.ghostPos.y + offset.y,
           this.rotation)) {
             this.ghostPos.add(offset);
             found = true;
@@ -550,76 +669,71 @@ function setup() { // Setup variables and canvas
       },
 
 
-      generateNew: function(givenDirection=null, count=0, givenPiece=null) { // Generate new piece
+      generateNew: function(givenDirection = null, count = 0, givenPiece = null) {
+        // If 4th attempt at generating then fail all spawns are invalid
         if (count >= 4) {
-          this.game0.lose();
+          console.log("Could not generate");
+          game0.lose();
 
         } else {
-          let newDirection = givenDirection!=null ? givenDirection : ((this.direction ? this.direction : 0) + 5) % 4;
+          // Use given direction otherwise next direction along
+          let newDirection = givenDirection != null
+            ? givenDirection
+            : ((this.direction ? this.direction : 0) + 5) % 4;
           let newRotation = 0;
-          let newType = givenPiece!=null ? givenPiece : this.game0.pieceList[newDirection][0];
 
+          // Use next piece in directions list
+          let newType = givenPiece != null
+            ? givenPiece
+            : game0.pieceList[newDirection][0];
+
+          // Check spawnPos
           let placed = false;
-          if (this.game0.spawnsValid[(newDirection+2)%4]) {
+          if (game0.spawnsValid[(newDirection + 2) % 4]) {
             let distance = 0;
-            let offset = vectorFromDirection(newDirection);
-            let newPos = createVector(
-              int((this.game0.board.size.x/2-2) * (1 - offset.x)),
-              int((this.game0.board.size.y/2-2) * (1 - offset.y))
-            );
-            placed = this.isViable(newType, newPos.x, newPos.y, newRotation);
+            let newPos = game0.board.getSpawnPos(newDirection);
+            placed = game0.board.isViable(newType, newPos.x, newPos.y, newRotation);
 
             if (placed) {
-              this.game0.pieceList[newDirection].shift();
-              this.game0.pieceList[newDirection].push(floor(random(this.game0.maxPiece)));
+              // Update directions pieceList
+              game0.pieceList[newDirection].shift();
+              game0.pieceList[newDirection].push(floor(random(game0.maxPiece)));
+
+              // Set piece variables
               this.direction = newDirection;
               this.rotation = newRotation;
               this.type = newType;
-              placed = true;
               this.pos = newPos;
             }
           }
 
+          // Try to place at next direction
           if (!placed)
-            this.generateNew((newDirection+1)%4, count+1); // Try to place at next direction
+            this.generateNew((newDirection + 1) % 4, count + 1);
         }
       },
 
 
-      isViable: function(checkPiece, nx, ny, checkRotation) { // Check whether a piece at a position and rotation is viable
-        for (let x = 0; x < 4; x++) {
-          for (let y = 0; y < 4; y++) {
-            let px = nx + x;
-            let py = ny + y;
-            let val = pieces[checkPiece][checkRotation][x][y];
-            if (val!=0) {
-              if (!this.game0.board.inBounds(px, py)) return false;
-              if (this.game0.board.game[px][py]!=0) return false;
-            }
-          }
-        }
-        return true;
-      },
-
-
-      place: function() { // Place the current piece at the current place
+      place: function() {
+        // Place the current piece at the current place
         for (let x = 0; x < 4; x++) {
           for (let y = 0; y < 4; y++) {
             let px = this.pos.x + x;
             let py = this.pos.y + y;
             let val = pieces[this.type][this.rotation][x][y];
-            if (val!=0) this.game0.board.game[px][py] = val+imagesNonPieceLimit;
+            if (val != 0) game0.board.game[px][py] = val+imagesNonPieceLimit;
           }
         }
-        this.game0.canHold = true;
-        this.game0.updateScore();
-        this.game0.updateSpawns();
+        game0.canHold = true;
+        game0.board.scoreFromLoops();
+        game0.board.updateSpawnsValid();
         this.generateNew();
       },
 
 
-      move: function(dx, dy) { // Move the current piece
-        if (this.isViable(this.type, this.pos.x+dx, this.pos.y+dy, this.rotation)) {
+      move: function(dx, dy) {c
+        // Move the current piece
+        if (game0.board.isViable(this.type, this.pos.x + dx, this.pos.y + dy, this.rotation)) {
           this.pos.x += dx;
           this.pos.y += dy;
           this.toPlace = false;
@@ -628,36 +742,37 @@ function setup() { // Setup variables and canvas
       },
 
 
-      rotate: function(difference) { // Rotate the current piece
+      rotate: function(difference) {
+        // Check if new rotation is valid
         let newPos = null;
-        let newRotation = (this.rotation+difference+4)%4;
+        let newRotation = (this.rotation + difference + 4) % 4;
+        if (game0.board.isViable(this.type, this.pos.x, this.pos.y, newRotation))
+          newPos = this.pos.copy();
 
-        if (this.isViable(this.type, this.pos.x, this.pos.y, newRotation))
-          newPos = createVector(this.pos.x, this.pos.y);
-
-        for (let dist = 1; dist < 3 && newPos == null; dist++) {
-          let x = this.pos.x-dist;
-          let y = this.pos.y-dist;
-
-          for (let dir = 0; dir < 4 && newPos == null; dir++) {
-            let offset = vectorFromDirection(dir);
-
-            for (let i = 0; i < dist*2 && newPos == null; i++) {
-              x += offset.x;
-              y += offset.y;
-              if (this.isViable(this.type, x, y, newRotation))
+        // Check in a loop up to 3 away for valid spaces
+        if (newPos == null) {
+          for (let dist = 1; dist < 3 && newPos == null; dist++) {
+            let x = this.pos.x - dist;
+            let y = this.pos.y - dist;
+            for (let dir = 0; dir < 4 && newPos == null; dir++) {
+              let offset = vectorFromDirection(dir);
+              for (let i = 0; i < dist * 2 && newPos == null; i++) {
+                x += offset.x;
+                y += offset.y;
+                if (game0.board.isViable(this.type, x, y, newRotation))
                 newPos = createVector(x, y);
+              }
             }
           }
         }
 
-        if (newPos != null) { // If found a successful position then place
+        // If found a successful position then place
+        if (newPos != null) {
           this.pos = newPos;
           this.rotation = newRotation;
           this.toPlace = false;
           return true;
-        }
-        return false;
+        } else return false;
       }
 
       // #endregion
@@ -669,38 +784,46 @@ function setup() { // Setup variables and canvas
 
     // #region - Functions
 
-    init: function() { // Called during setup
-      this.board.init(this);
-      this.piece.init(this);
+    init: function() {
+      // Called during setup
+      this.board.init();
+      this.piece.init();
       this.board.reset();
     },
 
 
-    changeTo: function() { // Called when changed to
+    changeTo: function() {
+      // Called when changed to
       this.reset();
     },
 
 
-    changeFrom: function() { // Called when changed from
+    changeFrom: function() {
+      // Called when changed from
       this.lose();
     },
 
 
-    start: function() { // Setup game variables
+    start: function() {
+      // Setup game variables
       this.running = true;
       this.hasReset = false;
       this.score = 0;
       this.inputs = [false, false, false, false];
       this.pieceList = [[],[],[],[]];
       this.spawnsValid = [true, true, true, true];
+
+      // Populate direction lists
       for (let i = 0; i < 4; i++)
         for (let o = 0; o < this.pieceListAmount; o++)
           this.pieceList[i].push(floor(random(this.maxPiece)));
 
+      // Reset board and endscreen, generate a piece
       this.board.reset();
       this.piece.generateNew(1);
       this.endScreen.inputBox.submitted = false;
 
+      // Reset piece movment variables
       this.piece.toMove = true;
       this.piece.toSprint = false;
       this.piece.toPlace = false;
@@ -710,7 +833,8 @@ function setup() { // Setup variables and canvas
     },
 
 
-    reset: function() { // Reset board to untouched state - Mainly visual
+    reset: function() {
+      // Reset board to untouched state - Mainly visual
       this.board.reset();
       this.inputs = [false, false, false, false];
       this.pieceList = [[],[],[],[]];
@@ -719,86 +843,97 @@ function setup() { // Setup variables and canvas
     },
 
 
-    lose: function() { // Cannot generate any pieces
+    lose: function() {
+      // Caled when annot generate any pieces
+      console.log("lost");
       this.running = false;
+      this.highScores = JSON.parse(localStorage.getItem("highScores"));
+
+      // Update piece variables
       this.piece.toMove = false;
       this.piece.toSprint = false;
       this.piece.toPlace = false;
       this.piece.moveTimer = 0;
       this.piece.inputTimer = 0;
       this.piece.ghostPos = null;
-      this.highScores = JSON.parse(localStorage.getItem("highScores"));
-      console.log("lost");
     },
 
 
-    update: function() { // Called each frame
+    update: function() {
+      // Called each frame
       this.piece.update();
       this.board.update();
     },
 
 
     show: function() {
-      this.board.showOutput(); // Show board
+      // Show board
+      this.board.showOutput();
 
-      textAlign(CENTER); // Show score
+      // Show score
+      textAlign(CENTER);
       textSize(20);
       noStroke();
       fill(255);
-      text("Score: " + this.score, width-80, 60);
+      text("Score: " + this.score, width - 80, 60);
 
-      let pieceSpacing = 50; // Show hold and pieceList for each direction based on boardPos
+      // Show hold and pieceList for each direction based on boardPos
+      let pieceSpacing = 50;
       let pieceSize = 40;
       let pieceShowScale = 0.75;
 
-      let pcx = pieceSpacing; // Draw hold piece - Use piece spacing
+      // Draw hold piece - Use piece spacing
+      let pcx = pieceSpacing;
       let pcy = pieceSpacing;
       strokeWeight(1);
       stroke(255);
       noFill();
-      rect(pcx - pieceSpacing/2, pcy - pieceSpacing/2, pieceSpacing, pieceSpacing);
+      rect(pcx - pieceSpacing * 0.5, pcy - pieceSpacing * 0.5, pieceSpacing, pieceSpacing);
       if (this.holdPieceType != null) {
-        let dif = (pieceShowScale*pieceSpacing/4);
+        let dif = (pieceShowScale * pieceSpacing / 4);
         let pWidth = pieces[this.holdPieceType][4].length;
         let pHeight = pieces[this.holdPieceType][4][0].length;
-        let ppx = pcx - dif * pWidth/2;
-        let ppy = pcy - dif * pHeight/2;
+        let ppx = pcx - dif * pWidth * 0.5;
+        let ppy = pcy - dif * pHeight * 0.5;
         for (let x = 0; x < pWidth; x++) {
           for (let y = 0; y < pHeight; y++) {
             let val = pieces[this.holdPieceType][4][x][y];
-            if (val != 0)
-              image(images[val+imagesNonPieceLimit], ppx + x*dif, ppy + y*dif, dif, dif);
+            if (val != 0) image(images[val + imagesNonPieceLimit], ppx + x * dif, ppy + y * dif, dif, dif);
           }
         }
       }
 
-      for (let i = 0; i < 4; i++) { // Draw pieces in lists - Use piece size
-        let offset = vectorFromDirection((i+2)%4);
-        let cx = this.board.pos.x + this.board.scale.x/2
-                + offset.x * (this.board.scale.x/2 + pieceSpacing);
-        let cy = this.board.pos.y + this.board.scale.y/2
-                + offset.y * (this.board.scale.y/2 + pieceSpacing);
+      // Draw pieces in lists - Use piece size
+      for (let i = 0; i < 4; i++) {
+        let offset = vectorFromDirection((i + 2) % 4);
+        let cx = this.board.pos.x + this.board.scale.x * 0.5
+          + offset.x * (this.board.scale.x * 0.5 + pieceSpacing);
+        let cy = this.board.pos.y + this.board.scale.y * 0.5
+          + offset.y * (this.board.scale.y * 0.5 + pieceSpacing);
 
-        let direction = vectorFromDirection((i+3)%4); // For each piece in pieceList
+        // For each piece in pieceList
+        let direction = vectorFromDirection((i + 3) % 4);
         for (let o = 0; o < this.pieceListAmount; o++) {
-          let pcx = cx + (o - (this.pieceListAmount-1)/2) * pieceSpacing * direction.x;
-          let pcy = cy + (o - (this.pieceListAmount-1)/2) * pieceSpacing * direction.y;
+          let pcx = cx + (o - (this.pieceListAmount - 1) * 0.5) * pieceSpacing * direction.x;
+          let pcy = cy + (o - (this.pieceListAmount - 1) * 0.5) * pieceSpacing * direction.y;
 
-          let p0x = pcx - pieceSize/2.0; // Show square
-          let p0y = pcy - pieceSize/2.0;
-          if (o==0) strokeWeight(3);
+          // Show square - outlined if first
+          let p0x = pcx - pieceSize * 0.5;
+          let p0y = pcy - pieceSize * 0.5;
+          if (o == 0) strokeWeight(3);
           else strokeWeight(1);
           stroke(255);
           noFill();
           rect(p0x, p0y, pieceSize, pieceSize);
 
-          if (this.running) { // Show piece
+          // Show piece
+          if (this.running) {
             noStroke();
-            let dif = (pieceShowScale*pieceSize/4);
+            let dif = (pieceShowScale * pieceSize / 4);
             let pWidth = pieces[this.pieceList[i][o]][4].length;
             let pHeight = pieces[this.pieceList[i][o]][4][0].length;
-            let p1x = pcx - dif * pWidth/2;
-            let p1y = pcy - dif * pHeight/2;
+            let p1x = pcx - dif * pWidth * 0.5;
+            let p1y = pcy - dif * pHeight * 0.5;
             for (let x = 0; x < pWidth; x++) {
               for (let y = 0; y < pHeight; y++) {
                 let val = pieces[this.pieceList[i][o]][4][x][y];
@@ -810,86 +945,39 @@ function setup() { // Setup variables and canvas
         }
       }
 
-      stroke(255); // Show play button
+      // Show play button
+      stroke(255);
       noFill();
       if (mouseX > this.startButton.pos.x
-      &&mouseX < this.startButton.pos.x+this.startButton.size.x
+      &&mouseX < this.startButton.pos.x + this.startButton.size.x
       &&mouseY > this.startButton.pos.y
-      &&mouseY < this.startButton.pos.y+this.startButton.size.y)
+      &&mouseY < this.startButton.pos.y + this.startButton.size.y)
         fill(50);
       stroke(255);
       rect(this.startButton.pos.x, this.startButton.pos.y,
       this.startButton.size.x, this.startButton.size.y);
+
+      // Show play button text
       textSize(20);
       textAlign(CENTER);
       noStroke();
       fill(255);
       text(this.running ? "Lose" : this.hasReset ? "Start" : "Reset",
-      this.startButton.pos.x + this.startButton.size.x/2,
-      this.startButton.pos.y + this.startButton.size.y/2+8);
+      this.startButton.pos.x + this.startButton.size.x * 0.5,
+      this.startButton.pos.y + this.startButton.size.y * 0.5+8);
 
+      // If game ended and havent reset then show endscreen
       if (!this.running && !this.hasReset) this.endScreen.show();
-    },
-
-
-    updateScore: function() {
-      for (let dist = 1; dist <= int(this.board.size.x/2); dist++) {
-        let x = int(this.board.size.x/2)-dist;
-        let y = int(this.board.size.y/2)-dist;
-
-        let completed = true;
-        for (let dir = 0; dir < 4; dir++) { // Check if current distance is completed
-          let offset = vectorFromDirection(dir);
-          for (let i = 0; i < dist*2; i++) {
-            x += offset.x;
-            y += offset.y;
-            if (this.board.game[x][y]==0)
-              completed = false;
-          }
-        }
-
-        if (completed) {
-          this.score += (dist*dist)*40;
-          for (let dir = 0; dir < 4; dir++) { // If completed then remove
-            let offset = vectorFromDirection(dir);
-            let offsetAway = vectorFromDirection((dir+3)%4);
-            for (let i = 0; i < dist*2; i++) {
-              x += offset.x;
-              y += offset.y;
-              this.board.game[x][y] = 0;
-            }
-          }
-        }
-      }
-    },
-
-
-    updateSpawns: function() {
-      for (let dir = 0; dir < 4; dir++) { // Update spawnsValid
-        let offset = vectorFromDirection(dir);
-        let spawnPos = createVector(
-          int((this.board.size.x/2-2) * (1 + offset.x)),
-          int((this.board.size.y/2-2) * (1 + offset.y))
-        );
-        for (let x = 0; x < 4; x++) {
-          for (let y = 0; y < 4; y++) {
-            let nx = spawnPos.x + x;
-            let ny = spawnPos.y + y;
-            if (this.board.game[nx][ny] != 0)
-              this.spawnsValid[dir] = false;
-          }
-        }
-      }
     },
 
 
     keyPressed: function() {
       if (this.running) {
         if (keyCode == 90) // Rotation
-        this.piece.rotate(1);
+          this.piece.rotate(1);
 
         else if (keyCode == 88)
-        this.piece.rotate(-1);
+          this.piece.rotate(-1);
 
         else if (keyCode == 67) { // Hold piece
           if (this.canHold) {
@@ -933,40 +1021,46 @@ function setup() { // Setup variables and canvas
 
     keyReleased: function() {
       if (this.running) {
-        if (keyCode >= 37 && keyCode <= 40) { // Movement
-          let inputDirection = (keyCode-35)%4;
+
+        // Movement
+        if (keyCode >= 37 && keyCode <= 40) {
+          let inputDirection = [39, 40, 37, 38].indexOf(keyCode);
           this.inputs[inputDirection] = false;
           this.piece.inputTimer = 0;
         }
       }
     },
 
-    mousePressed: function() { // Input
-      if (mouseX > this.startButton.pos.x // Check for play button
-      &&mouseX < this.startButton.pos.x+this.startButton.size.x
-      &&mouseY > this.startButton.pos.y
-      &&mouseY < this.startButton.pos.y+this.startButton.size.y) {
+    mousePressed: function() {
+      // Check for play button
+      if (mouseX > this.startButton.pos.x
+      && mouseX < this.startButton.pos.x+this.startButton.size.x
+      && mouseY > this.startButton.pos.y
+      && mouseY < this.startButton.pos.y+this.startButton.size.y) {
+
+        // Reset, start or lose based on game state
         if (!this.running) {
           if (!this.hasReset) this.reset();
           else this.start();
         } else this.lose();
       }
 
-      if (!this.running && !this.hasReset && !this.endScreen.inputBox.submitted) { // Select input box
+      // Select input box
+      if (!this.running && !this.hasReset && !this.endScreen.inputBox.submitted) {
         this.endScreen.inputBox.selected = (
           mouseX > this.endScreen.inputBox.pos.x
-        &&mouseX < this.endScreen.inputBox.pos.x + this.endScreen.inputBox.size.x
-        &&mouseY > this.endScreen.inputBox.pos.y
-        &&mouseY < this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y);
+        && mouseX < this.endScreen.inputBox.pos.x + this.endScreen.inputBox.size.x
+        && mouseY > this.endScreen.inputBox.pos.y
+        && mouseY < this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y);
       }
     }
 
     // #endregion
-
   };
 
 
-  gameController = { // Main controller
+  // Main controller
+  gameController = {
 
     // #region - Variables
 
@@ -978,41 +1072,54 @@ function setup() { // Setup variables and canvas
 
     // #region - Functions
 
-    init: function() { // Called during setup
-        for (let screen of this.screens)
-          screen.init();
+    init: function() {
+      // Called during setup
+      for (let screen of this.screens)
+        screen.init();
     },
 
 
-    update: function() { // Called each frame
+    update: function() {
+      // Called each frame
       if (this.currentScreen != null)
         this.currentScreen.update();
     },
 
 
-    show: function() { // Called each frame after update
+    show: function() {
+      // Called each frame after update
       if (this.currentScreen != null)
         this.currentScreen.show();
     },
 
 
-    keyPressed: function() { // Input
+    keyPressed: function() {
+      // Input
       if (this.currentScreen != null)
         this.currentScreen.keyPressed();
     },
 
-    keyReleased: function() { // Input
+    keyReleased: function() {
+      // Input
       if (this.currentScreen != null)
         this.currentScreen.keyReleased();
     },
 
-    mousePressed: function() { // Input
+    mousePressed: function() {
+      // Input
       if (this.currentScreen != null)
         this.currentScreen.mousePressed();
+    },
+
+
+    changeScreen: function(screen) {
+      // Change to a specific screen while calling correct functions
+      this.currentScreen.changeFrom();
+      this.currentScreen = screen;
+      this.currentScreen.changeTo();
     }
 
     // #endregion
-
   };
 
 
@@ -1024,33 +1131,38 @@ function setup() { // Setup variables and canvas
 
 // #region - Main
 
-function draw() { // Called each frame
+function draw() {
+  // Called each frame
   background(0);
   gameController.update();
   gameController.show();
 }
 
 
-function keyPressed() { // Input
+function keyPressed() {
+  // Input
   if (gameController != null)
     gameController.keyPressed();
 }
 
-function keyReleased() { // Input
+function keyReleased() {
+  // Input
   if (gameController != null)
     gameController.keyReleased();
 }
 
-function mousePressed() { // Input
+function mousePressed() {
+  // Input
   if (gameController != null)
     gameController.mousePressed();
 }
 
 
-function vectorFromDirection(direction) { // Get direction vector from int
+function vectorFromDirection(direction) {
+  // Get direction vector from int (0 - 4)
   return createVector(
-    int(cos(direction*PI/2)),
-    int(sin(direction*PI/2))
+    int(cos(direction * PI * 0.5)),
+    int(sin(direction * PI * 0.5))
   );
 }
 
