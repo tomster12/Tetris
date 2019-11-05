@@ -731,7 +731,7 @@ function setup() {
       },
 
 
-      move: function(dx, dy) {c
+      move: function(dx, dy) {
         // Move the current piece
         if (game0.board.isViable(this.type, this.pos.x + dx, this.pos.y + dy, this.rotation)) {
           this.pos.x += dx;
