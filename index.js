@@ -29,8 +29,9 @@
 //    - check data.js
 
 //    TODO
-// Make pieceList an object holding all variables and functions
-// Use a better piece selection algorithm
+// Make a pieceList object that holds all variables
+//    and functions including a piece bag for each side
+//    that allow better generation of pieces
 // Speed up over time
 
 // Find better font and clean up gamescreen
@@ -233,7 +234,6 @@ function setup() {
 
     // Constant variables
     maxPiece: 7,
-    pieceListAmount: 4,
     screenName: "game0",
     startButton: {
       pos: createVector(width - 120, height - 75),
@@ -245,10 +245,7 @@ function setup() {
     hasReset: true,
     score: 0,
     inputs: [false, false, false, false],
-    pieceList: [[], [], [], []],
     spawnsValid: [true, true, true, true],
-    holdPieceType: null,
-    canHold: true,
     score: 0,
     highScores: null,
 
@@ -274,9 +271,11 @@ function setup() {
             this.selected = false;
             this.submitted = true;
 
+            // If no highscores currently then create an empty list
             if (game0.highScores == null)
               game0.highScores = [];
 
+            // Find where to place score in highscores
             let toPlaceAt = game0.highScores.length;
             for (let i = 0; i < game0.highScores.length; i++) {
               if (game0.score > game0.highScores[i].score) {
@@ -285,6 +284,7 @@ function setup() {
               }
             }
 
+            // Place score into list and update local storage
             console.log("placing score at " + toPlaceAt);
             game0.highScores.splice(toPlaceAt, 0, {"name": this.text, "score": game0.score});
             localStorage.setItem("highScores", JSON.stringify(game0.highScores));
@@ -298,25 +298,26 @@ function setup() {
       // #region - Functions
 
       show: function() {
-
-        stroke(255); // Show main background
+        // Show main background
+        stroke(255);
         fill(0);
         rect(this.pos.x, this.pos.y,
         this.size.x, this.size.y);
         noStroke();
         fill(255);
 
-        textAlign(CENTER); // Show text
+        // Show text
+        textAlign(CENTER);
         textSize(35);
         text("Game Over", this.pos.x + this.size.x * 0.5,
         this.pos.y + 60);
-
         textAlign(LEFT);
         textSize(18);
         text("Score: " + game0.score, this.pos.x + this.size.x * 0.5 - 150,
         this.pos.y + 120);
 
-        textSize(18); // Show highscores
+        // Show highscores
+        textSize(18);
         for (let i = 0; i < 10; i++) {
           let cx = this.pos.x + this.size.x * 0.5;
           let cy = this.pos.y + 160 + 32 * i;
@@ -329,7 +330,8 @@ function setup() {
           }
         }
 
-        stroke(255); // Show input box
+        // Show input box
+        stroke(255);
         noFill();
         textAlign(LEFT);
         rect(this.inputBox.pos.x, this.inputBox.pos.y,
@@ -338,13 +340,12 @@ function setup() {
         fill(this.inputBox.text=="" ? 180 : 255);
         let outputText = this.inputBox.selected
         ? this.inputBox.text + (frameCount % 20 < 10 ? "|" : "")
-        : this.inputBox.text=="" ? "Name..." : this.inputBox.text;
+        : this.inputBox.text == "" ? "Name..." : this.inputBox.text;
         text(outputText, this.inputBox.pos.x + 12 ,
         this.inputBox.pos.y + this.inputBox.size.y * 0.5 + 7);
       }
 
       // #endregion
-
     },
 
 
@@ -562,7 +563,6 @@ function setup() {
       },
 
       // #endregion
-
     },
 
 
@@ -651,7 +651,6 @@ function setup() {
       updateGhostPos: function() {
         // Can potentially remove this check TODO check
         if (this.toMove) {
-          console.log(this.toMove);
 
           // Update ghostPos
           let offset = vectorFromDirection(this.direction);
@@ -685,19 +684,19 @@ function setup() {
           // Use next piece in directions list
           let newType = givenPiece != null
             ? givenPiece
-            : game0.pieceList[newDirection][0];
+            : game0.pieceContainers.pieceList[newDirection][0];
 
           // Check spawnPos
           let placed = false;
-          if (game0.spawnsValid[(newDirection + 2) % 4]) {
+          if (game0.spawnsValid[newDirection]) {
             let distance = 0;
             let newPos = game0.board.getSpawnPos(newDirection);
             placed = game0.board.isViable(newType, newPos.x, newPos.y, newRotation);
 
             if (placed) {
               // Update directions pieceList
-              game0.pieceList[newDirection].shift();
-              game0.pieceList[newDirection].push(floor(random(game0.maxPiece)));
+              game0.pieceContainers.pieceList[newDirection].shift();
+              game0.pieceContainers.fillPieceLists();
 
               // Set piece variables
               this.direction = newDirection;
@@ -776,7 +775,107 @@ function setup() {
       }
 
       // #endregion
+    },
 
+
+    pieceContainers: {
+
+      // #region - Setup
+
+      // Constant Variables
+      pieceListAmount: 4,
+      pieceSpacing: 50,
+      pieceSize: 40,
+      pieceShowScale: 0.75,
+
+      // Main Variables
+      pieceList: [[], [], [], []],
+      holdPieceType: null,
+      canHold: true,
+
+      // #endregion
+
+
+      // #region - Main
+
+      init: function() {
+        // Called at start
+      },
+
+      showContainers: function() {
+        // Draw hold piece - Use piece spacing
+        let pcx = this.pieceSpacing;
+        let pcy = this.pieceSpacing;
+        strokeWeight(1);
+        stroke(255);
+        noFill();
+        rect(pcx - this.pieceSpacing * 0.5, pcy - this.pieceSpacing * 0.5, this.pieceSpacing, this.pieceSpacing);
+        if (this.holdPieceType != null) {
+          let dif = (this.pieceShowScale * this.pieceSpacing / 4);
+          let pWidth = pieces[this.holdPieceType][4].length;
+          let pHeight = pieces[this.holdPieceType][4][0].length;
+          let ppx = pcx - dif * pWidth * 0.5;
+          let ppy = pcy - dif * pHeight * 0.5;
+          for (let x = 0; x < pWidth; x++) {
+            for (let y = 0; y < pHeight; y++) {
+              let val = pieces[this.holdPieceType][4][x][y];
+              if (val != 0) image(images[val + imagesNonPieceLimit], ppx + x * dif, ppy + y * dif, dif, dif);
+            }
+          }
+        }
+
+        // Draw pieces in lists - Use piece size
+        for (let i = 0; i < 4; i++) {
+          let offset = vectorFromDirection((i + 2) % 4);
+          let cx = game0.board.pos.x + game0.board.scale.x * 0.5
+            + offset.x * (game0.board.scale.x * 0.5 + this.pieceSpacing);
+          let cy = game0.board.pos.y + game0.board.scale.y * 0.5
+            + offset.y * (game0.board.scale.y * 0.5 + this.pieceSpacing);
+
+          // For each piece in pieceList
+          let direction = vectorFromDirection((i + 3) % 4);
+          for (let o = 0; o < this.pieceListAmount; o++) {
+            let pcx = cx + (o - (this.pieceListAmount - 1) * 0.5) * this.pieceSpacing * direction.x;
+            let pcy = cy + (o - (this.pieceListAmount - 1) * 0.5) * this.pieceSpacing * direction.y;
+
+            // Show square - outlined if first
+            let p0x = pcx - this.pieceSize * 0.5;
+            let p0y = pcy - this.pieceSize * 0.5;
+            if (o == 0) strokeWeight(3);
+            else strokeWeight(1);
+            stroke(255);
+            noFill();
+            rect(p0x, p0y, this.pieceSize, this.pieceSize);
+
+            // Show piece
+            if (game0.running) {
+              noStroke();
+              let dif = (this.pieceShowScale * this.pieceSize / 4);
+              let pWidth = pieces[this.pieceList[i][o]][4].length;
+              let pHeight = pieces[this.pieceList[i][o]][4][0].length;
+              let p1x = pcx - dif * pWidth * 0.5;
+              let p1y = pcy - dif * pHeight * 0.5;
+              for (let x = 0; x < pWidth; x++) {
+                for (let y = 0; y < pHeight; y++) {
+                  let val = pieces[this.pieceList[i][o]][4][x][y];
+                  if (val != 0)
+                    image(images[val + imagesNonPieceLimit], p1x + x*dif, p1y + y*dif, dif, dif);
+                }
+              }
+            }
+          }
+        }
+      },
+
+      fillPieceLists: function() {
+        // Fill piece lists
+        for (let i = 0; i < this.pieceList.length; i++) {
+          while (this.pieceList[i].length < this.pieceListAmount)
+            this.pieceList[i].push(floor(random(game0.maxPiece)));
+        }
+      },
+
+      // #endregion
     },
 
     // #endregion
@@ -788,6 +887,7 @@ function setup() {
       // Called during setup
       this.board.init();
       this.piece.init();
+      this.pieceContainers.init();
       this.board.reset();
     },
 
@@ -810,16 +910,12 @@ function setup() {
       this.hasReset = false;
       this.score = 0;
       this.inputs = [false, false, false, false];
-      this.pieceList = [[],[],[],[]];
       this.spawnsValid = [true, true, true, true];
 
-      // Populate direction lists
-      for (let i = 0; i < 4; i++)
-        for (let o = 0; o < this.pieceListAmount; o++)
-          this.pieceList[i].push(floor(random(this.maxPiece)));
-
-      // Reset board and endscreen, generate a piece
+      // Reset board and endscreen, generate a piece, fill piece lists
       this.board.reset();
+      this.pieceContainers.pieceList = [[], [], [], []];
+      this.pieceContainers.fillPieceLists();
       this.piece.generateNew(1);
       this.endScreen.inputBox.submitted = false;
 
@@ -877,81 +973,16 @@ function setup() {
       fill(255);
       text("Score: " + this.score, width - 80, 60);
 
-      // Show hold and pieceList for each direction based on boardPos
-      let pieceSpacing = 50;
-      let pieceSize = 40;
-      let pieceShowScale = 0.75;
-
-      // Draw hold piece - Use piece spacing
-      let pcx = pieceSpacing;
-      let pcy = pieceSpacing;
-      strokeWeight(1);
-      stroke(255);
-      noFill();
-      rect(pcx - pieceSpacing * 0.5, pcy - pieceSpacing * 0.5, pieceSpacing, pieceSpacing);
-      if (this.holdPieceType != null) {
-        let dif = (pieceShowScale * pieceSpacing / 4);
-        let pWidth = pieces[this.holdPieceType][4].length;
-        let pHeight = pieces[this.holdPieceType][4][0].length;
-        let ppx = pcx - dif * pWidth * 0.5;
-        let ppy = pcy - dif * pHeight * 0.5;
-        for (let x = 0; x < pWidth; x++) {
-          for (let y = 0; y < pHeight; y++) {
-            let val = pieces[this.holdPieceType][4][x][y];
-            if (val != 0) image(images[val + imagesNonPieceLimit], ppx + x * dif, ppy + y * dif, dif, dif);
-          }
-        }
-      }
-
-      // Draw pieces in lists - Use piece size
-      for (let i = 0; i < 4; i++) {
-        let offset = vectorFromDirection((i + 2) % 4);
-        let cx = this.board.pos.x + this.board.scale.x * 0.5
-          + offset.x * (this.board.scale.x * 0.5 + pieceSpacing);
-        let cy = this.board.pos.y + this.board.scale.y * 0.5
-          + offset.y * (this.board.scale.y * 0.5 + pieceSpacing);
-
-        // For each piece in pieceList
-        let direction = vectorFromDirection((i + 3) % 4);
-        for (let o = 0; o < this.pieceListAmount; o++) {
-          let pcx = cx + (o - (this.pieceListAmount - 1) * 0.5) * pieceSpacing * direction.x;
-          let pcy = cy + (o - (this.pieceListAmount - 1) * 0.5) * pieceSpacing * direction.y;
-
-          // Show square - outlined if first
-          let p0x = pcx - pieceSize * 0.5;
-          let p0y = pcy - pieceSize * 0.5;
-          if (o == 0) strokeWeight(3);
-          else strokeWeight(1);
-          stroke(255);
-          noFill();
-          rect(p0x, p0y, pieceSize, pieceSize);
-
-          // Show piece
-          if (this.running) {
-            noStroke();
-            let dif = (pieceShowScale * pieceSize / 4);
-            let pWidth = pieces[this.pieceList[i][o]][4].length;
-            let pHeight = pieces[this.pieceList[i][o]][4][0].length;
-            let p1x = pcx - dif * pWidth * 0.5;
-            let p1y = pcy - dif * pHeight * 0.5;
-            for (let x = 0; x < pWidth; x++) {
-              for (let y = 0; y < pHeight; y++) {
-                let val = pieces[this.pieceList[i][o]][4][x][y];
-                if (val != 0)
-                  image(images[val+imagesNonPieceLimit], p1x + x*dif, p1y + y*dif, dif, dif);
-              }
-            }
-          }
-        }
-      }
+      // Show hold and pieceList
+      this.pieceContainers.showContainers();
 
       // Show play button
       stroke(255);
       noFill();
       if (mouseX > this.startButton.pos.x
-      &&mouseX < this.startButton.pos.x + this.startButton.size.x
-      &&mouseY > this.startButton.pos.y
-      &&mouseY < this.startButton.pos.y + this.startButton.size.y)
+      && mouseX < this.startButton.pos.x + this.startButton.size.x
+      && mouseY > this.startButton.pos.y
+      && mouseY < this.startButton.pos.y + this.startButton.size.y)
         fill(50);
       stroke(255);
       rect(this.startButton.pos.x, this.startButton.pos.y,
@@ -973,31 +1004,33 @@ function setup() {
 
     keyPressed: function() {
       if (this.running) {
-        if (keyCode == 90) // Rotation
-          this.piece.rotate(1);
 
+        // Rotation
+        if (keyCode == 90)
+          this.piece.rotate(1);
         else if (keyCode == 88)
           this.piece.rotate(-1);
 
-        else if (keyCode == 67) { // Hold piece
+        // Hold piece
+        else if (keyCode == 67) {
           if (this.canHold) {
-            let prevHoldPieceType = this.holdPieceType;
-            this.holdPieceType = this.piece.type;
+            let prevHoldPieceType = this.pieceContainers.holdPieceType;
+            this.pieceContainers.holdPieceType = this.piece.type;
             this.piece.generateNew(this.piece.direction, 0, prevHoldPieceType);
             this.canHold = false;
           }
 
-        } else if (keyCode == 32) { // Hard drop
+        // Hard drop
+        } else if (keyCode == 32) {
           if (this.piece.ghostPos != null) {
-            let dx = this.piece.ghostPos.x-this.piece.pos.x;
-            let dy = this.piece.ghostPos.y-this.piece.pos.y;
+            let dx = this.piece.ghostPos.x - this.piece.pos.x;
+            let dy = this.piece.ghostPos.y - this.piece.pos.y;
             this.piece.move(dx, dy);
             this.piece.place();
-          } else {
-            console.log("no ghost");
-          }
+          } else console.log("no ghost");
 
-        } else if (keyCode >= 37 && keyCode <= 40) { // Movement
+        // Movement
+        } else if (keyCode >= 37 && keyCode <= 40) {
           let inputDirection = (keyCode-35)%4;
           this.inputs[inputDirection] = true;
           let offset = vectorFromDirection(inputDirection);
@@ -1006,7 +1039,8 @@ function setup() {
           ) this.piece.move(offset.x, offset.y);
         }
 
-      } else { // Type into input box
+      // Type into input box
+      } else {
         if (!this.hasReset && this.endScreen.inputBox.selected && !this.endScreen.inputBox.submitted) {
             let allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ1234567890";
             if (allowed.includes(key) && this.endScreen.inputBox.text.length < 6)
@@ -1019,10 +1053,10 @@ function setup() {
       }
     },
 
-    keyReleased: function() {
-      if (this.running) {
 
-        // Movement
+    keyReleased: function() {
+      // Movement
+      if (this.running) {
         if (keyCode >= 37 && keyCode <= 40) {
           let inputDirection = [39, 40, 37, 38].indexOf(keyCode);
           this.inputs[inputDirection] = false;
@@ -1030,6 +1064,7 @@ function setup() {
         }
       }
     },
+
 
     mousePressed: function() {
       // Check for play button
@@ -1053,7 +1088,7 @@ function setup() {
         && mouseY > this.endScreen.inputBox.pos.y
         && mouseY < this.endScreen.inputBox.pos.y + this.endScreen.inputBox.size.y);
       }
-    }
+    },
 
     // #endregion
   };
